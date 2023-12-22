@@ -6,7 +6,6 @@ List the playlists on Spotify and YTMusic
 
 import json
 from ytmusicapi import YTMusic
-from icecream import ic
 
 yt = YTMusic("oauth.json")
 

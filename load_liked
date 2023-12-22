@@ -6,7 +6,6 @@ Load the "Liked Songs" playlist from Spotify into YTMusic.
 
 import json
 from ytmusicapi import YTMusic
-from icecream import ic
 
 yt = YTMusic("oauth.json")
 

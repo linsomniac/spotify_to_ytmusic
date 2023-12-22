@@ -6,8 +6,8 @@ Copy a Spotify playlist to a YTMusic playlist
 
 import sys
 import json
+import time
 from ytmusicapi import YTMusic
-from icecream import ic
 
 
 if len(sys.argv) != 3:
@@ -75,6 +75,12 @@ for src_pl in spotify_pls["playlists"]:
             f"  Youtube: {dst_track['title']} - {dst_track['artists'][0]['name']} - {dst_track['album']}"
         )
 
-        yt.add_playlist_items(
-            playlistId=dst_pl_id, videoIds=[dst_track["videoId"]], duplicates=False
-        )
+        for x in range(10):
+            try:
+                yt.add_playlist_items(
+                    playlistId=dst_pl_id, videoIds=[dst_track["videoId"]], duplicates=False
+                )
+                break
+            except Exception as e:
+                print(f'ERROR: (Retrying) {e}')
+                time.sleep(5)
