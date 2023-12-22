@@ -1,5 +1,9 @@
 Tools for moving from Spotify to YTMusic
 
+# Overview
+
+This is a set of scripts for copying "liked" songs and playlists from Spotify to YTMusic.
+
 # Getting Started
 
 ## Install ytmusicapi
