@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+
+"""
+Create a YTMusic playlist
+"""
+
+import sys
+from ytmusicapi import YTMusic
+
+
+if len(sys.argv) != 2:
+    print(f"usage: {sys.argv[0]} <YT PLAYLIST NAME>")
+    sys.exit(1)
+
+pl_name = sys.argv[1]
+
+yt = YTMusic("oauth.json")
+
+id = yt.create_playlist(title=pl_name, description=pl_name)
+print(f'Playlist ID: {id}')

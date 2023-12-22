@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+"""
+List the playlists on Spotify and YTMusic
+"""
+
+import json
+from ytmusicapi import YTMusic
+from icecream import ic
+
+yt = YTMusic("oauth.json")
+
+
+spotify_pls = json.load(open("playlists.json", "r"))
+
+#  Liked music
+print('== Spotify')
+for src_pl in spotify_pls["playlists"]:
+    print(f"{src_pl.get('id')} - {src_pl['name']}")
+
+print()
+print('== YTMusic')
+for pl in yt.get_library_playlists(limit=5000):
+    print(f"{pl['playlistId']} - {pl['title']}")
