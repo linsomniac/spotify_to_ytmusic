@@ -70,6 +70,9 @@ spotify_pls = json.load(open("playlists.json", "r"))
 yt_pl = yt.get_playlist(playlistId=dst_pl_id)
 print(f"== Youtube Playlist: {yt_pl['title']}")
 
+tracks_added_set = set()
+duplicate_count = 0
+
 for src_pl in spotify_pls["playlists"]:
     if src_pl.get("id") != src_pl_id:
         continue
@@ -91,6 +94,11 @@ for src_pl in spotify_pls["playlists"]:
             f"  Youtube: {dst_track['title']} - {dst_track['artists'][0]['name']} - {dst_track['album']}"
         )
 
+        if dst_track["videoId"] in tracks_added_set:
+            print("(DUPLICATE, this track has already been added)")
+            duplicate_track_count += 1
+        tracks_added_set.add(dst_track["videoId"])
+
         exception_sleep = 5
         for x in range(10):
             try:
@@ -107,3 +115,6 @@ for src_pl in spotify_pls["playlists"]:
 
         if args.track_sleep:
             time.sleep(args.track_sleep)
+
+print()
+print(f"Added {len(tracks_added_set)} tracks, encountered {duplicate_count} duplicates")
