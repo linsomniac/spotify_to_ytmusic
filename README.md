@@ -58,4 +58,12 @@ If you need to create a playlist, run:
 Re-running "copy_playlist" or "load_liked" in the event that it fails should be safe, it
 will not duplicate entries on the playlist.
 
+## FAQ
+
+- My copy is failing with repeated "ERROR: (Retrying) Server returned HTTP 400: Bad
+  Request".
+
+  Try running with "--track-sleep=3" argument to do a 3 second sleep between tracks.  This
+  will take much longer, but may succeed where faster rates have failed.
+
 [//]: # ( vim: set tw=90 ts=4 sw=4 ai: )
