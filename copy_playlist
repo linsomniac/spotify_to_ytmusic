@@ -50,6 +50,11 @@ def parse_arguments():
         help="Time to sleep between each track that is added (default: 0.1)",
     )
     parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Do not add songs to destination playlist (default: False)",
+    )
+    parser.add_argument(
         "spotify_playlist_id", type=str, help="ID of the Spotify playlist to copy from"
     )
     parser.add_argument(
@@ -74,7 +79,7 @@ tracks_added_set = set()
 duplicate_count = 0
 
 for src_pl in spotify_pls["playlists"]:
-    if src_pl.get("id") != src_pl_id:
+    if str(src_pl.get("id")) != src_pl_id:
         continue
 
     src_pl_name = src_pl["name"]
@@ -96,22 +101,23 @@ for src_pl in spotify_pls["playlists"]:
 
         if dst_track["videoId"] in tracks_added_set:
             print("(DUPLICATE, this track has already been added)")
-            duplicate_track_count += 1
+            duplicate_count += 1
         tracks_added_set.add(dst_track["videoId"])
 
-        exception_sleep = 5
-        for x in range(10):
-            try:
-                yt.add_playlist_items(
-                    playlistId=dst_pl_id,
-                    videoIds=[dst_track["videoId"]],
-                    duplicates=False,
-                )
-                break
-            except Exception as e:
-                print(f"ERROR: (Retrying) {e} in {exception_sleep} seconds")
-                time.sleep(exception_sleep)
-                exception_sleep *= 2
+        if not args.dry_run:
+            exception_sleep = 5
+            for x in range(10):
+                try:
+                    yt.add_playlist_items(
+                        playlistId=dst_pl_id,
+                        videoIds=[dst_track["videoId"]],
+                        duplicates=False,
+                    )
+                    break
+                except Exception as e:
+                    print(f"ERROR: (Retrying) {e} in {exception_sleep} seconds")
+                    time.sleep(exception_sleep)
+                    exception_sleep *= 2
 
         if args.track_sleep:
             time.sleep(args.track_sleep)
