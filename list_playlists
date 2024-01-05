@@ -15,9 +15,9 @@ spotify_pls = json.load(open("playlists.json", "r"))
 #  Liked music
 print('== Spotify')
 for src_pl in spotify_pls["playlists"]:
-    print(f"{src_pl.get('id')} - {src_pl['name']}")
+    print(f"{src_pl.get('id')} - {src_pl['name']:50} ({len(src_pl['tracks'])} tracks)")
 
 print()
 print('== YTMusic')
 for pl in yt.get_library_playlists(limit=5000):
-    print(f"{pl['playlistId']} - {pl['title']}")
+    print(f"{pl['playlistId']} - {pl['title']:40} ({pl.get('count', '?')} tracks)")
