@@ -42,6 +42,9 @@ def lookup_song(yt, track_name, artist_name, album_name):
 
 spotify_pls = json.load(open("playlists.json", "r"))
 
+error_count = 0
+track_count = 0
+
 #  Liked music
 for src_pl in spotify_pls["playlists"]:
     src_pl_name = src_pl["name"]
@@ -57,10 +60,20 @@ for src_pl in spotify_pls["playlists"]:
         src_track_name = src_track["track"]["name"]
 
         print(f"Spotify:   {src_track_name} - {src_track_artist} - {src_album_name}")
-        dst_track = lookup_song(yt, src_track_name, src_track_artist, src_album_name)
+
+        try:
+            dst_track = lookup_song(yt, src_track_name, src_track_artist, src_album_name)
+        except Exception as e:
+            print(f"ERROR: Unable to look up song on YTMusic: {e}")
+            error_count += 1
+
         # print(f"  Youtube: {dst_track['videoId']} - {dst_track['title']} - {dst_track['artists'][0]['name']}")
         print(
             f"  Youtube: {dst_track['title']} - {dst_track['artists'][0]['name']} - {dst_track['album']}"
         )
 
         yt.rate_song(dst_track["videoId"], "LIKE")
+
+        track_count += 1
+
+print(f"Done.  Successful Tracks: {track_count}  Errors: {error_count}")
