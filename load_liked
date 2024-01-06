@@ -19,10 +19,13 @@ def lookup_song(yt, track_name, artist_name, album_name):
         # print(album)
         # print(f"ALBUM: {album['browseId']} - {album['title']} - {album['artists'][0]['name']}")
 
-        for track in yt.get_album(album["browseId"])["tracks"]:
-            if track["title"] == track_name:
-                return track
+        try:
+            for track in yt.get_album(album["browseId"])["tracks"]:
+                if track["title"] == track_name:
+                    return track
             # print(f"{track['videoId']} - {track['title']} - {track['artists'][0]['name']}")
+        except Exception as e:
+            print(f"Unable to lookup album ({e}), trying track lookup...")
 
     songs = yt.search(query=f"{track_name} by {artist_name}", filter="songs")
     return songs[0]
