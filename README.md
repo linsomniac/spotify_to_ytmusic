@@ -60,6 +60,18 @@ will not duplicate entries on the playlist.
 
 ## FAQ
 
+- How does the lookup algorithm work?
+
+  Given the Spotify track information, it does a lookup for the album by the same artist
+  on YTMusic, then looks at the first 3 hits looking for a track with exactly the same
+  name.  In the event that it can't find that exact track, it then does a search of songs
+  for the track name by the same artist and simply returns the first hit.
+
+  The idea is that finding the album and artist and then looking for the exact track match
+  will be more likely to be accurate than searching for the song and artist and relying on
+  the YTMusic algorithm to figure things out, especially for short tracks that might be
+  have many contradictory hits like "Survival by Yes".
+
 - My copy is failing with repeated "ERROR: (Retrying) Server returned HTTP 400: Bad
   Request".
 
