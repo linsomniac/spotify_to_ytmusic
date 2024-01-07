@@ -158,10 +158,11 @@ def copier(
     dst_pl_id: Optional[str] = None,
     dry_run: bool = False,
     track_sleep: float = 0.1,
+    spotify_playlist_file: str = "playlists.json",
 ):
     yt = YTMusic("oauth.json")
 
-    spotify_pls = json.load(open("playlists.json", "r"))
+    spotify_pls = json.load(open(spotify_playlist_file, "r"))
     if dst_pl_id is not None:
         yt_pl = yt.get_playlist(playlistId=dst_pl_id)
         print(f"== Youtube Playlist: {yt_pl['title']}")

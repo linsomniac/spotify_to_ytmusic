@@ -1,3 +1,4 @@
 oauth.json
 playlists.json
 __pycache__
+dist/
