@@ -9,7 +9,6 @@ from ytmusicapi import YTMusic
 from typing import Optional
 
 
-
 def list_playlists():
     """
     List the playlists on Spotify and YTMusic
@@ -19,12 +18,14 @@ def list_playlists():
     spotify_pls = json.load(open("playlists.json", "r"))
 
     #  Liked music
-    print('== Spotify')
+    print("== Spotify")
     for src_pl in spotify_pls["playlists"]:
-        print(f"{src_pl.get('id')} - {src_pl['name']:50} ({len(src_pl['tracks'])} tracks)")
+        print(
+            f"{src_pl.get('id')} - {src_pl['name']:50} ({len(src_pl['tracks'])} tracks)"
+        )
 
     print()
-    print('== YTMusic')
+    print("== YTMusic")
     for pl in yt.get_library_playlists(limit=5000):
         print(f"{pl['playlistId']} - {pl['title']:40} ({pl.get('count', '?')} tracks)")
 
@@ -42,7 +43,7 @@ def create_playlist():
     yt = YTMusic("oauth.json")
 
     id = yt.create_playlist(title=pl_name, description=pl_name)
-    print(f'Playlist ID: {id}')
+    print(f"Playlist ID: {id}")
 
 
 def lookup_song(yt, track_name, artist_name, album_name):
@@ -92,6 +93,7 @@ def load_liked():
     """
     Load the "Liked Songs" playlist from Spotify into YTMusic.
     """
+
     def parse_arguments():
         parser = ArgumentParser()
         parser.add_argument(
@@ -107,7 +109,6 @@ def load_liked():
         )
 
         return parser.parse_args()
-
 
     args = parse_arguments()
 
@@ -118,6 +119,7 @@ def copy_playlist():
     """
     Copy a Spotify playlist to a YTMusic playlist
     """
+
     def parse_arguments():
         parser = ArgumentParser()
         parser.add_argument(
@@ -132,14 +134,17 @@ def copy_playlist():
             help="Do not add songs to destination playlist (default: False)",
         )
         parser.add_argument(
-            "spotify_playlist_id", type=str, help="ID of the Spotify playlist to copy from"
+            "spotify_playlist_id",
+            type=str,
+            help="ID of the Spotify playlist to copy from",
         )
         parser.add_argument(
-            "ytmusic_playlist_id", type=str, help="ID of the YTMusic playlist to copy to"
+            "ytmusic_playlist_id",
+            type=str,
+            help="ID of the YTMusic playlist to copy to",
         )
 
         return parser.parse_args()
-
 
     args = parse_arguments()
     src_pl_id = args.spotify_playlist_id
@@ -148,7 +153,12 @@ def copy_playlist():
     copier(src_pl_id, dst_pl_id, args.dry_run, args.track_sleep)
 
 
-def copier(src_pl_id: Optional[str] = None, dst_pl_id: Optional[str] = None, dry_run: bool = False, track_sleep: float = 0.1):
+def copier(
+    src_pl_id: Optional[str] = None,
+    dst_pl_id: Optional[str] = None,
+    dry_run: bool = False,
+    track_sleep: float = 0.1,
+):
     yt = YTMusic("oauth.json")
 
     spotify_pls = json.load(open("playlists.json", "r"))
@@ -178,10 +188,14 @@ def copier(src_pl_id: Optional[str] = None, dst_pl_id: Optional[str] = None, dry
             src_track_artist = src_track["track"]["artists"][0]["name"]
             src_track_name = src_track["track"]["name"]
 
-            print(f"Spotify:   {src_track_name} - {src_track_artist} - {src_album_name}")
+            print(
+                f"Spotify:   {src_track_name} - {src_track_artist} - {src_album_name}"
+            )
 
             try:
-                dst_track = lookup_song(yt, src_track_name, src_track_artist, src_album_name)
+                dst_track = lookup_song(
+                    yt, src_track_name, src_track_artist, src_album_name
+                )
             except Exception as e:
                 print(f"ERROR: Unable to look up song on YTMusic: {e}")
                 error_count += 1
@@ -218,4 +232,6 @@ def copier(src_pl_id: Optional[str] = None, dst_pl_id: Optional[str] = None, dry
                 time.sleep(track_sleep)
 
     print()
-    print(f"Added {len(tracks_added_set)} tracks, encountered {duplicate_count} duplicates, {error_count} errors")
+    print(
+        f"Added {len(tracks_added_set)} tracks, encountered {duplicate_count} duplicates, {error_count} errors"
+    )

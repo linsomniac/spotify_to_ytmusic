@@ -6,9 +6,37 @@ This is a set of scripts for copying "liked" songs and playlists from Spotify to
 
 # Getting Started
 
-## Install ytmusicapi
+## Install spotify2ytmusic (via pip)
 
-`pip install ytmusicapi`
+This package is available on pip, so you can install it using:
+
+`pip install spotify2ytmusic`
+
+or:
+
+`python3 -m pip install spotify2ytmusic`
+
+## (Or) Running From Source
+
+(Not recommended)
+
+Another option, instead of pip, is to just clone this repo and run directly from the
+source.  However, you will need the "ytmusicapi" package installed, so you'll probably
+want to use pip to install that at the very least.
+
+To run directly from source:
+
+```shell
+git clone git@github.com:linsomniac/spotify_to_ytmusic.git
+cd spotify_to_ytmusic
+```
+
+Then you can run the following commands to run the individual s2yt commands:
+
+- For s2yt_copy_playlist: `python3 -m spotify2ytmusic.copy_playlist`
+- For s2yt_create_playlist: `python3 -m spotify2ytmusic.create_playlist`
+- For s2yt_list_playlists: `python3 -m spotify2ytmusic.list_playlists`
+- For s2yt_load_liked: `python3 -m spotify2ytmusic.load_liked`
 
 ## Login to YTMusic
 
@@ -19,6 +47,9 @@ done with the import you can remove the authorization for this app.
 
 This will write a file "oauth.json".  Keep this file secret while the app is authorized.
 This file includes a logged in session token.
+
+ytmusicapi is a dependency of this software and should be installed as part of the "pip
+install".
 
 ## Backup Your Spotify Playlists
 
@@ -33,7 +64,7 @@ This will save your playlists and liked songs into the file "playlists.json".
 
 ## Import Your Liked Songs
 
-Run: `python3 load_liked`
+Run: `s2yt_load_liked`
 
 It will go through your Spotify liked songs, and like them on YTMusic.  It will display
 the song from spotify and then the song that it found on YTMusic that it is liking.  I've
@@ -43,17 +74,17 @@ esoteric titles it may have issues with.
 
 ## List Your Playlists
 
-Run `python3 list_playlists`
+Run `s2yt_list_playlists`
 
 This will list the playlists you have on both Spotify and YTMusic.  You will need to
 individually copy them.  Find the "playlist id" (the first column) of the Spotify
 playlist, and of the YTMusic playlist, and then run:
 
-`python3 copy_playlist <SPOTIFY_PLAYLIST_ID> <YTMUSIC_PLAYLIST_ID>`
+`s2yt_copy_playlist <SPOTIFY_PLAYLIST_ID> <YTMUSIC_PLAYLIST_ID>`
 
 If you need to create a playlist, run:
 
-`python3 create_playlist "<PLAYLIST_NAME>"`
+`s2yt_create_playlist "<PLAYLIST_NAME>"`
 
 Re-running "copy_playlist" or "load_liked" in the event that it fails should be safe, it
 will not duplicate entries on the playlist.
