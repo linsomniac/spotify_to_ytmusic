@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "spotify_to_ytmusic"
+version = "0.1.0"
+description = "Copy Spotify playlists to YTMusic/YouTube Music"
+authors = ["Sean Reifschneider <jafo00@gmail.com>"]
+license = "Creative Commons Zero v1.0 Universal"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ytmusicapi = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+s2yt_load_liked = "spotify_to_ytmusic.cli:load_liked"
+s2yt_copy_playlist = "spotify_to_ytmusic.cli:copy_playlist"
+s2yt_create_playlist = "spotify_to_ytmusic.cli:create_playlist"
+s2yt_list_playlists = "spotify_to_ytmusic.cli:list_playlists"

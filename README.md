@@ -78,4 +78,8 @@ will not duplicate entries on the playlist.
   Try running with "--track-sleep=3" argument to do a 3 second sleep between tracks.  This
   will take much longer, but may succeed where faster rates have failed.
 
+## License
+
+Creative Commons Zero v1.0 Universal
+
 [//]: # ( vim: set tw=90 ts=4 sw=4 ai: )
