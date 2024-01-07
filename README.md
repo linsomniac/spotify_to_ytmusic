@@ -54,7 +54,7 @@ install".
 ## Backup Your Spotify Playlists
 
 Download
-[https://raw.githubusercontent.com/caseychu/spotify-backup/master/spotify-backup.py](spotify-backup).
+[spotify-backup](https://raw.githubusercontent.com/caseychu/spotify-backup/master/spotify-backup.py).
 
 Run `spotify-backup.py` and it will help you authorize access to your spotify account.
 
