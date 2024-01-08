@@ -139,7 +139,7 @@ def copy_playlist():
             help="ID of the Spotify playlist to copy from",
         )
         parser.add_argument(
-            "ytmusic_playlist_id",
+            "--ytmusic_playlist_id",  # Maybe make this name shorter
             type=str,
             help="ID of the YTMusic playlist to copy to",
         )
@@ -148,7 +148,12 @@ def copy_playlist():
 
     args = parse_arguments()
     src_pl_id = args.spotify_playlist_id
-    dst_pl_id = args.ytmusic_playlist_id
+
+    if args.ytmusic_playlist_id is None:
+        pl_name = input("What is the name of the new playlist?\n")
+        dst_pl_id = YTMusic("oauth.json").create_playlist(title=pl_name, description=pl_name)
+    else:
+        dst_pl_id = args.ytmusic_playlist_id
 
     copier(src_pl_id, dst_pl_id, args.dry_run, args.track_sleep)
 
