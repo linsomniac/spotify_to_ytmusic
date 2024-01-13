@@ -312,9 +312,12 @@ def copier(
         print(f"== Spotify Playlist: {src_pl_name}")
 
         for src_track in src_pl["tracks"]:
-            src_album_artist = src_track["track"]["album"]["artists"][0]["name"]
             src_album_name = src_track["track"]["album"]["name"]
-            src_track_artist = src_track["track"]["artists"][0]["name"]
+            try:
+                src_track_artist = src_track["track"]["artists"][0]["name"]
+            except Exception:
+                print(f"Unable to find spotify artist in track: {src_track}")
+                sys.exit(1)
             src_track_name = src_track["track"]["name"]
 
             print(
