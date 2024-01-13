@@ -179,7 +179,11 @@ def copier(
 
     spotify_pls = json.load(open(spotify_playlist_file, "r"))
     if dst_pl_id is not None:
-        yt_pl = yt.get_playlist(playlistId=dst_pl_id)
+        try:
+            yt_pl = yt.get_playlist(playlistId=dst_pl_id)
+        except Exception as e:
+            print(f"ERROR: Unable to find YTMusic playlist {dst_pl_id}: {e}")
+            sys.exit(1)
         print(f"== Youtube Playlist: {yt_pl['title']}")
 
     tracks_added_set = set()
