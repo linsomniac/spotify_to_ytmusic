@@ -9,11 +9,26 @@ from ytmusicapi import YTMusic
 from typing import Optional
 
 
+def get_ytmusic() -> YTMusic:
+    if not os.path.exists("oauth.json"):
+        print("ERROR: No file 'oauth.json' exists in the current directory.")
+        print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
+        sys.exit(1)
+
+    try:
+        return YTMusic("oauth.json")
+    except json.decoder.JSONDecodeError as e:
+        print(f"ERROR: JSON Decode error while trying start YTMusic: {e}")
+        print("       This typically means a problem with a 'oauth.json' file.")
+        print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
+        sys.exit(1)
+
+
 def list_playlists():
     """
     List the playlists on Spotify and YTMusic
     """
-    yt = YTMusic("oauth.json")
+    yt = get_ytmusic()
 
     spotify_pls = json.load(open("playlists.json", "r"))
 
@@ -40,7 +55,7 @@ def create_playlist():
 
     pl_name = sys.argv[1]
 
-    yt = YTMusic("oauth.json")
+    yt = get_ytmusic()
 
     id = yt.create_playlist(title=pl_name, description=pl_name)
     print(f"Playlist ID: {id}")
@@ -160,7 +175,7 @@ def copier(
     track_sleep: float = 0.1,
     spotify_playlist_file: str = "playlists.json",
 ):
-    yt = YTMusic("oauth.json")
+    yt = get_ytmusic()
 
     spotify_pls = json.load(open(spotify_playlist_file, "r"))
     if dst_pl_id is not None:
