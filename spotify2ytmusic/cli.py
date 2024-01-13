@@ -6,7 +6,7 @@ import os
 import time
 from argparse import ArgumentParser
 from ytmusicapi import YTMusic
-from typing import Optional
+from typing import Optional, Union
 
 
 def get_ytmusic() -> YTMusic:
@@ -22,6 +22,15 @@ def get_ytmusic() -> YTMusic:
         print("       This typically means a problem with a 'oauth.json' file.")
         print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
         sys.exit(1)
+
+
+def get_playlist_id_by_name(yt: YTMusic, title: str) -> Optional[str]:
+    """Look up a YTMusic playlist ID by name.  Return None if not found."""
+    for pl in yt.get_library_playlists(limit=5000):
+        if pl["title"] == title:
+            return pl["playlistId"]
+
+    return None
 
 
 def list_playlists():
@@ -156,7 +165,7 @@ def copy_playlist():
         parser.add_argument(
             "ytmusic_playlist_id",
             type=str,
-            help="ID of the YTMusic playlist to copy to",
+            help="ID of the YTMusic playlist to copy to.  If this argument starts with a '+', it is asumed to be the playlist title rather than playlist ID, and if a playlist of that name is not found, it will be created (without the +).  Example: '+My Favorite Blues'.  NOTE: The shell will require you to quote the name if it contains spaces.",
         )
 
         return parser.parse_args()
@@ -164,6 +173,16 @@ def copy_playlist():
     args = parse_arguments()
     src_pl_id = args.spotify_playlist_id
     dst_pl_id = args.ytmusic_playlist_id
+
+    if dst_pl_id.startswith("+"):
+        yt = get_ytmusic()
+        pl_name = dst_pl_id[1:]
+
+        dst_pl_id = get_playlist_id_by_name(yt, pl_name)
+        print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
+        if dst_pl_id is None:
+            dst_pl_id = yt.create_playlist(title=pl_name, description=pl_name)
+            print(f"NOTE: Created playlist '{pl_name}' with ID: {dst_pl_id}")
 
     copier(src_pl_id, dst_pl_id, args.dry_run, args.track_sleep)
 

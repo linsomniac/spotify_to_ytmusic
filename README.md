@@ -77,14 +77,27 @@ esoteric titles it may have issues with.
 Run `s2yt_list_playlists`
 
 This will list the playlists you have on both Spotify and YTMusic.  You will need to
-individually copy them.  Find the "playlist id" (the first column) of the Spotify
-playlist, and of the YTMusic playlist, and then run:
+individually copy them.
+
+## Copy Your Playlists
+
+In the list output above, find the "playlist id" (the first column) of the Spotify playlist,
+and of the YTMusic playlist, and then run:
 
 `s2yt_copy_playlist <SPOTIFY_PLAYLIST_ID> <YTMUSIC_PLAYLIST_ID>`
 
-If you need to create a playlist, run:
+If you need to create a playlist, you can run:
 
 `s2yt_create_playlist "<PLAYLIST_NAME>"`
+
+*Or* the copy playlist can take the name of the YTMusic playlist and will create the
+playlist if it does not exist, if you start the YTMusic playlist with a "+":
+
+`s2yt_copy_playlist <SPOTIFY_PLAYLIST_ID> +<YTMUSIC_PLAYLIST_NAME>`
+
+For example:
+
+`s2yt_copy_playlist SPOTIFY_PLAYLIST_ID "+Feeling Like a PUNK"`
 
 Re-running "copy_playlist" or "load_liked" in the event that it fails should be safe, it
 will not duplicate entries on the playlist.
