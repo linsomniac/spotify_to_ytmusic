@@ -113,6 +113,35 @@ def lookup_song(yt, track_name, artist_name, album_name):
     raise ValueError(f"Did not find {track_name} by {artist_name} from {album_name}")
 
 
+def search():
+    """Search for a track on ytmusic"""
+
+    def parse_arguments():
+        parser = ArgumentParser()
+        parser.add_argument(
+            "track_name",
+            type=str,
+            help="Name of track to search for",
+        )
+        parser.add_argument(
+            "--artist",
+            type=str,
+            help="Artist to look up",
+        )
+        parser.add_argument(
+            "--album",
+            type=str,
+            help="Album name",
+        )
+        return parser.parse_args()
+
+    args = parse_arguments()
+
+    yt = get_ytmusic()
+    ret = lookup_song(yt, args.track_name, args.artist, args.album)
+    print(ret)
+
+
 def load_liked():
     """
     Load the "Liked Songs" playlist from Spotify into YTMusic.
@@ -301,8 +330,11 @@ def copier(
                 error_count += 1
                 continue
 
+            yt_artist_name = "<Unknown>"
+            if "artists" in dst_track and len(dst_track["artists"]) > 0:
+                yt_artist_name = dst_track["artists"][0]["name"]
             print(
-                f"  Youtube: {dst_track['title']} - {dst_track['artists'][0]['name']} - {dst_track['album']}"
+                f"  Youtube: {dst_track['title']} - {yt_artist_name} - {dst_track['album']}"
             )
 
             if dst_track["videoId"] in tracks_added_set:

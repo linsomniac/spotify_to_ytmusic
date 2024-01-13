@@ -110,6 +110,12 @@ For example:
 Re-running "copy_playlist" or "load_liked" in the event that it fails should be safe, it
 will not duplicate entries on the playlist.
 
+## Searching for YTMusic Tracks
+
+This is mostly for debugging, but there is a command to search for tracks in YTMusic:
+
+`s2yt_search --artist <ARTIST> --album <ALBUM> <TRACK_NAME>`
+
 ## FAQ
 
 - How does the lookup algorithm work?
