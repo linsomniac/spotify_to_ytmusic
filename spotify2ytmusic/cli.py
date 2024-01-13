@@ -183,6 +183,10 @@ def copier(
             yt_pl = yt.get_playlist(playlistId=dst_pl_id)
         except Exception as e:
             print(f"ERROR: Unable to find YTMusic playlist {dst_pl_id}: {e}")
+            print(
+                "       Make sure the YTMusic playlist ID is correct, it should be something like "
+            )
+            print("      'PL_DhcdsaJ7echjfdsaJFhdsWUd73HJFca'")
             sys.exit(1)
         print(f"== Youtube Playlist: {yt_pl['title']}")
 
