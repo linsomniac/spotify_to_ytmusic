@@ -81,6 +81,14 @@ individually copy them.
 
 ## Copy Your Playlists
 
+You can either copy **all** playlists, or do a more surgical copy of individual playlists.
+Copying all playlists will use the name of the Spotify playlist as the destination
+playlist name on YTMusic.  To copy all playlists, run:
+
+`s2yt_copy_all_playlists`
+
+**NOTE**: This does not copy the Liked playlist (see above to do that).
+
 In the list output above, find the "playlist id" (the first column) of the Spotify playlist,
 and of the YTMusic playlist, and then run:
 

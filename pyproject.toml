@@ -17,5 +17,6 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 s2yt_load_liked = "spotify2ytmusic.cli:load_liked"
 s2yt_copy_playlist = "spotify2ytmusic.cli:copy_playlist"
+s2yt_copy_all_playlists = "spotify2ytmusic.cli:copy_all_playlists"
 s2yt_create_playlist = "spotify2ytmusic.cli:create_playlist"
 s2yt_list_playlists = "spotify2ytmusic.cli:list_playlists"

@@ -182,6 +182,7 @@ def copy_playlist():
         print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
         if dst_pl_id is None:
             dst_pl_id = yt.create_playlist(title=pl_name, description=pl_name)
+            time.sleep(1)  # seems to be needed to avoid missing playlist ID error
 
             #  create_playlist returns a dict if there was an error
             if isinstance(dst_pl_id, dict):
@@ -190,6 +191,54 @@ def copy_playlist():
             print(f"NOTE: Created playlist '{pl_name}' with ID: {dst_pl_id}")
 
     copier(src_pl_id, dst_pl_id, args.dry_run, args.track_sleep, yt=yt)
+
+
+def copy_all_playlists():
+    """
+    Copy all Spotify playlists (except Liked Songs) to YTMusic playlists
+    """
+    yt = YTMusic("oauth.json")
+
+    def parse_arguments():
+        parser = ArgumentParser()
+        parser.add_argument(
+            "--track-sleep",
+            type=float,
+            default=0.1,
+            help="Time to sleep between each track that is added (default: 0.1)",
+        )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Do not add songs to destination playlist (default: False)",
+        )
+
+        return parser.parse_args()
+
+    args = parse_arguments()
+    spotify_pls = json.load(open("playlists.json", "r"))
+
+    for src_pl in spotify_pls["playlists"]:
+        if str(src_pl.get("name")) == "Liked Songs":
+            continue
+
+        pl_name = src_pl["name"]
+        dst_pl_id = get_playlist_id_by_name(yt, pl_name)
+        print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
+        if dst_pl_id is None:
+            dst_pl_id = yt.create_playlist(title=pl_name, description=pl_name)
+            time.sleep(1)  # seems to be needed to avoid missing playlist ID error
+
+            #  create_playlist returns a dict if there was an error
+            if isinstance(dst_pl_id, dict):
+                print(f"ERROR: Failed to create playlist: {dst_pl_id}")
+                sys.exit(1)
+            print(f"NOTE: Created playlist '{pl_name}' with ID: {dst_pl_id}")
+
+        copier(src_pl["id"], dst_pl_id, args.dry_run, args.track_sleep)
+        print("\nPlaylist done!\n")
+
+    print("All done!")
 
 
 def copier(
