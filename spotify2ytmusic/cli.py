@@ -312,6 +312,12 @@ def copier(
         print(f"== Spotify Playlist: {src_pl_name}")
 
         for src_track in src_pl["tracks"]:
+            if src_track["track"] is None:
+                print(
+                    f"WARNING: Spotify track seems to be malformed, Skipping.  Track: {src_track!r}"
+                )
+                continue
+
             try:
                 src_album_name = src_track["track"]["album"]["name"]
                 src_track_artist = src_track["track"]["artists"][0]["name"]
