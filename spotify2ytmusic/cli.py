@@ -39,7 +39,7 @@ def list_playlists():
     """
     yt = get_ytmusic()
 
-    spotify_pls = json.load(open("playlists.json", "r"))
+    spotify_pls = load_playlists_json()
 
     #  Liked music
     print("== Spotify")
@@ -160,12 +160,23 @@ def load_liked():
             action="store_true",
             help="Do not add songs to destination playlist (default: False)",
         )
+        parser.add_argument(
+            "--spotify-playlists-encoding",
+            default="utf-8",
+            help="The encoding of the `playlists.json` file.",
+        )
 
         return parser.parse_args()
 
     args = parse_arguments()
 
-    copier(None, None, args.dry_run, args.track_sleep)
+    copier(
+        None,
+        None,
+        args.dry_run,
+        args.track_sleep,
+        spotify_encoding=args.spotify_playlists_encoding,
+    )
 
 
 def copy_playlist():
@@ -196,6 +207,11 @@ def copy_playlist():
             type=str,
             help="ID of the YTMusic playlist to copy to.  If this argument starts with a '+', it is asumed to be the playlist title rather than playlist ID, and if a playlist of that name is not found, it will be created (without the +).  Example: '+My Favorite Blues'.  NOTE: The shell will require you to quote the name if it contains spaces.",
         )
+        parser.add_argument(
+            "--spotify-playlists-encoding",
+            default="utf-8",
+            help="The encoding of the `playlists.json` file.",
+        )
 
         return parser.parse_args()
 
@@ -219,7 +235,14 @@ def copy_playlist():
                 sys.exit(1)
             print(f"NOTE: Created playlist '{pl_name}' with ID: {dst_pl_id}")
 
-    copier(src_pl_id, dst_pl_id, args.dry_run, args.track_sleep, yt=yt)
+    copier(
+        src_pl_id,
+        dst_pl_id,
+        args.dry_run,
+        args.track_sleep,
+        yt=yt,
+        spotify_encoding=args.spotify_playlists_encoding,
+    )
 
 
 def copy_all_playlists():
@@ -241,11 +264,16 @@ def copy_all_playlists():
             action="store_true",
             help="Do not add songs to destination playlist (default: False)",
         )
+        parser.add_argument(
+            "--spotify-playlists-encoding",
+            default="utf-8",
+            help="The encoding of the `playlists.json` file.",
+        )
 
         return parser.parse_args()
 
     args = parse_arguments()
-    spotify_pls = json.load(open("playlists.json", "r"))
+    spotify_pls = load_playlists_json()
 
     for src_pl in spotify_pls["playlists"]:
         if str(src_pl.get("name")) == "Liked Songs":
@@ -264,10 +292,21 @@ def copy_all_playlists():
                 sys.exit(1)
             print(f"NOTE: Created playlist '{pl_name}' with ID: {dst_pl_id}")
 
-        copier(src_pl["id"], dst_pl_id, args.dry_run, args.track_sleep)
+        copier(
+            src_pl["id"],
+            dst_pl_id,
+            args.dry_run,
+            args.track_sleep,
+            spotify_encoding=args.spotify_playlists_encoding,
+        )
         print("\nPlaylist done!\n")
 
     print("All done!")
+
+
+def load_playlists_json(filename: str = "playlists.json", encoding: str = "utf-8"):
+    """Load the `playlists.json` Spotify playlist file"""
+    return json.load(open(filename, "r", encoding=encoding))
 
 
 def copier(
@@ -277,12 +316,13 @@ def copier(
     track_sleep: float = 0.1,
     spotify_playlist_file: str = "playlists.json",
     *,
+    spotify_encoding: str = "utf-8",
     yt: Optional[YTMusic] = None,
 ):
     if yt is None:
         yt = get_ytmusic()
 
-    spotify_pls = json.load(open(spotify_playlist_file, "r"))
+    spotify_pls = load_playlists_json(spotify_playlist_file, spotify_encoding)
     if dst_pl_id is not None:
         try:
             yt_pl = yt.get_playlist(playlistId=dst_pl_id)
