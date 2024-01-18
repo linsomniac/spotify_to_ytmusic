@@ -2,3 +2,4 @@ oauth.json
 playlists.json
 __pycache__
 dist/
+spotify2ytmusic/playlists_backup.json
