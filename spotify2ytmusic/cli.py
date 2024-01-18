@@ -63,7 +63,11 @@ def _ytmusic_create_playlist(yt: YTMusic, title: str, description: str) -> str:
                 id = _ytmusic_create_playlist(yt, title=title, description=description)
                 return id
             except Exception as e:
-                print(f"ERROR: (Retrying) {e} in {exception_sleep} seconds")
+                print(
+                    f"ERROR: (Retrying create_playlist: {title}) {e} in {exception_sleep} seconds"
+                )
+                if "maximum recursion depth" in str(e):
+                    raise
                 time.sleep(exception_sleep)
                 exception_sleep *= 2
 
@@ -435,7 +439,11 @@ def copier(
                             yt.rate_song(dst_track["videoId"], "LIKE")
                         break
                     except Exception as e:
-                        print(f"ERROR: (Retrying) {e} in {exception_sleep} seconds")
+                        print(
+                            f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e} in {exception_sleep} seconds"
+                        )
+                        if "maximum recursion depth" in str(e):
+                            raise
                         time.sleep(exception_sleep)
                         exception_sleep *= 2
 
