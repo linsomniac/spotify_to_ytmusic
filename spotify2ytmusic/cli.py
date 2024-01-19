@@ -66,8 +66,6 @@ def _ytmusic_create_playlist(yt: YTMusic, title: str, description: str) -> str:
                 print(
                     f"ERROR: (Retrying create_playlist: {title}) {e} in {exception_sleep} seconds"
                 )
-                if "maximum recursion depth" in str(e):
-                    raise
                 time.sleep(exception_sleep)
                 exception_sleep *= 2
 
@@ -442,8 +440,6 @@ def copier(
                         print(
                             f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e} in {exception_sleep} seconds"
                         )
-                        if "maximum recursion depth" in str(e):
-                            raise
                         time.sleep(exception_sleep)
                         exception_sleep *= 2
 
