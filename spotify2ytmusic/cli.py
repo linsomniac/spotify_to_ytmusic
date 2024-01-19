@@ -55,6 +55,36 @@ def list_playlists():
         print(f"{pl['playlistId']} - {pl['title']:40} ({pl.get('count', '?')} tracks)")
 
 
+def _ytmusic_create_playlist(yt: YTMusic, title: str, description: str) -> str:
+    def _create(yt: YTMusic, title: str, description: str) -> Union[str, dict]:
+        exception_sleep = 5
+        for _ in range(10):
+            try:
+                """Create a playlist on YTMusic, retrying if it fails."""
+                id = yt.create_playlist(title=title, description=description)
+                return id
+            except Exception as e:
+                print(
+                    f"ERROR: (Retrying create_playlist: {title}) {e} in {exception_sleep} seconds"
+                )
+                time.sleep(exception_sleep)
+                exception_sleep *= 2
+
+        return {
+            "s2yt error": 'ERROR: Could not create playlist "{title}" after multiple retries'
+        }
+
+    id = _create(yt, title, description)
+    #  create_playlist returns a dict if there was an error
+    if isinstance(id, dict):
+        print(f"ERROR: Failed to create playlist (name: {title}): {id}")
+        sys.exit(1)
+
+    time.sleep(1)  # seems to be needed to avoid missing playlist ID error
+
+    return id
+
+
 def create_playlist():
     """
     Create a YTMusic playlist
@@ -67,7 +97,7 @@ def create_playlist():
 
     yt = get_ytmusic()
 
-    id = yt.create_playlist(title=pl_name, description=pl_name)
+    id = _ytmusic_create_playlist(yt, title=pl_name, description=pl_name)
     print(f"Playlist ID: {id}")
 
 
@@ -271,7 +301,7 @@ def copy_playlist(src_pl_id = "", dst_pl_id = ""):
         dst_pl_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
         if dst_pl_id is None:
-            dst_pl_id = yt.create_playlist(title=pl_name, description=pl_name)
+            dst_pl_id = _ytmusic_create_playlist(yt, title=pl_name, description=pl_name)
             time.sleep(1)  # seems to be needed to avoid missing playlist ID error
 
             #  create_playlist returns a dict if there was an error
@@ -343,7 +373,7 @@ def copy_all_playlists():
         dst_pl_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
         if dst_pl_id is None:
-            dst_pl_id = yt.create_playlist(title=pl_name, description=pl_name)
+            dst_pl_id = _ytmusic_create_playlist(yt, title=pl_name, description=pl_name)
             time.sleep(1)  # seems to be needed to avoid missing playlist ID error
 
             #  create_playlist returns a dict if there was an error
@@ -467,7 +497,9 @@ def copier(
                             yt.rate_song(dst_track["videoId"], "LIKE")
                         break
                     except Exception as e:
-                        print(f"ERROR: (Retrying) {e} in {exception_sleep} seconds")
+                        print(
+                            f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e} in {exception_sleep} seconds"
+                        )
                         time.sleep(exception_sleep)
                         exception_sleep *= 2
 

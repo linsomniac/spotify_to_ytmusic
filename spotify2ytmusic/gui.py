@@ -32,6 +32,8 @@ class Window():
 
         # Redirect stdout to GUI
         sys.stdout.write = self.redirector
+        
+        self.root.after(1, lambda: self.yt_login(auto=True))
 
         # Create a PanedWindow with vertical orientation
         self.paned_window = ttk.PanedWindow(self.root, orient=tk.VERTICAL)
@@ -152,10 +154,13 @@ class Window():
             print()
 
 
-    def yt_login(self):
+    def yt_login(self, auto=False):
         def run_in_thread():
             if os.path.exists("oauth.json"):
-                print("File detected, skipping login")
+                print("File detected, auto login")
+            elif auto:
+                print("No file detected. Manual login required")
+                return
             else:
                 print("File not detected, login required")
                 command = ["ytmusicapi", "oauth"]
@@ -169,14 +174,15 @@ class Window():
                 process.communicate()
                 
                 print("Login successful")
+                
+            self.tabControl.select(self.tab1)
+            print()
+
 
         # Run the function in a separate thread
         th = threading.Thread(target=run_in_thread)
         th.start()
-        while th.is_alive():
-            self.root.update()
-        self.tabControl.select(self.tab1)
-        print()
 
 if __name__ == "__main__":
-    Window()
+    ui = Window()
+    ui.yt_login(auto=True)
