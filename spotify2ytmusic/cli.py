@@ -60,7 +60,7 @@ def _ytmusic_create_playlist(yt: YTMusic, title: str, description: str) -> str:
         for _ in range(10):
             try:
                 """Create a playlist on YTMusic, retrying if it fails."""
-                id = _ytmusic_create_playlist(yt, title=title, description=description)
+                id = yt.create_playlist(title=title, description=description)
                 return id
             except Exception as e:
                 print(
