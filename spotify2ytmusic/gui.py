@@ -109,8 +109,7 @@ class Window():
         self.yt_playlist_id = tk.Entry(self.tab6)
         self.yt_playlist_id.pack(anchor=tk.CENTER)
         create_button(self.tab6, text="Copy", command=self.call_copy_playlist).pack(anchor=tk.CENTER)
-        
-        self.root.mainloop()
+
 
     def redirector(self, inputStr):
         self.logs.config(state=tk.NORMAL)
@@ -185,4 +184,4 @@ class Window():
 
 if __name__ == "__main__":
     ui = Window()
-    ui.yt_login(auto=True)
+    ui.root.mainloop()
