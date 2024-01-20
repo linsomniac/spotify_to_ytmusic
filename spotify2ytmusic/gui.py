@@ -174,12 +174,9 @@ class Window:
                 # Open a new console window to run the command
                 if os.name == 'nt':  # If the OS is Windows
                     process = subprocess.Popen(command, creationflags=subprocess.CREATE_NEW_CONSOLE)
+                    process.communicate()
                 else:  # For Unix and Linux
-                    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-                process.communicate()
-
-                print("Login successful")
+                    subprocess.call('xterm -e ytmusicapi oauth', shell=True, stdout=subprocess.PIPE)
 
             self.tabControl.select(self.tab1)
             print()
