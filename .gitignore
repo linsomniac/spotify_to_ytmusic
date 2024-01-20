@@ -3,3 +3,9 @@ playlists.json
 __pycache__
 dist/
 spotify2ytmusic/playlists_backup.json
+spotify2ytmusic/.idea/discord.xml
+spotify2ytmusic/.idea/inspectionProfiles/profiles_settings.xml
+spotify2ytmusic/.idea/misc.xml
+spotify2ytmusic/.idea/modules.xml
+spotify2ytmusic/.idea/spotify2ytmusic.iml
+spotify2ytmusic/.idea/vcs.xml
