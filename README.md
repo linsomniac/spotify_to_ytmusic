@@ -3,6 +3,7 @@ Tools for moving from Spotify to YTMusic
 # Overview
 
 This is a set of scripts for copying "liked" songs and playlists from Spotify to YTMusic.
+There is also [a GUI version by Yoween available](https://github.com/Yoween/spotify_to_ytmusic_gui).
 
 # Getting Started
 
