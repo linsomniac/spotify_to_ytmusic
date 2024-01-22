@@ -11,11 +11,11 @@ from reverse_playlist import reverse_playlist
 
 
 def create_label(parent, text, **kwargs):
-    return tk.Label(parent, text=text, font=("Helvetica", 14), **kwargs)
+    return tk.Label(parent, text=text, font=("Helvetica", 14), background="#26242f", foreground="white", **kwargs)
 
 
 def create_button(parent, text, **kwargs):
-    return tk.Button(parent, text=text, font=("Helvetica", 14), **kwargs)
+    return tk.Button(parent, text=text, font=("Helvetica", 14), background="#696969", foreground="white", border=1, **kwargs)
 
 
 class Window:
@@ -23,6 +23,14 @@ class Window:
         self.root = tk.Tk()
         self.root.title("Spotify to YT Music")
         self.root.geometry("1280x720")
+        self.root.config(background="#26242f")
+        
+        style = ttk.Style()
+        style.theme_use('default')
+        style.configure("TNotebook.Tab", background="#121212", foreground="white")  # Set the background color to #121212 when not selected
+        style.map("TNotebook.Tab", background=[("selected", "#26242f")], foreground=[("selected", "#ffffff")])  # Set the background color to #26242f and text color to white when selected
+        style.configure('TFrame', background='#26242f')
+        style.configure('TNotebook', background='#121212')
 
         # Redirect stdout to GUI
         sys.stdout.write = self.redirector
@@ -38,8 +46,7 @@ class Window:
         self.paned_window.add(self.tab_frame, weight=1)
 
         # Create the TabControl (notebook)
-        style = ttk.Style()
-        style.configure('TNotebook.Tab', font=('Helvetica', '12'))
+        
 
         self.tabControl = ttk.Notebook(self.tab_frame)
         self.tabControl.pack(fill=tk.BOTH, expand=1)
@@ -68,57 +75,65 @@ class Window:
         # Create the Text widget for the logs
         self.logs = tk.Text(self.log_frame, font=("Helvetica", 14))
         self.logs.pack(fill=tk.BOTH, expand=1)
+        self.logs.config(background="#26242f", foreground="white")
 
         # tab 0
         create_label(self.tab0, text="Welcome to Spotify to YT Music!\nTo start, you need to login to YT Music.").pack(
-            anchor=tk.CENTER)
-        create_button(self.tab0, text="Login", command=self.yt_login).pack(anchor=tk.CENTER)
+            anchor=tk.CENTER, expand=True)
+        create_button(self.tab0, text="Login", command=self.yt_login).pack(anchor=tk.CENTER, expand=True)
 
         # tab1
-        create_label(self.tab1, text="First, you need to backup your spotify playlists").pack(anchor=tk.CENTER)
+        create_label(self.tab1, text="First, you need to backup your spotify playlists").pack(anchor=tk.CENTER, expand=True)
         create_button(self.tab1, text="Backup", command=lambda: self.call_func(spotify_backup.main, self.tab2)).pack(
-            anchor=tk.CENTER)
+            anchor=tk.CENTER, expand=True)
 
         # tab2
         create_label(self.tab2,
-                     text="Since this program likes the last added song first, you need to reverse the playlist if "
-                          "you want to keep the exact same playlists.\nBut this step is not mandatory, you can skip "
-                          "it if you don't mind by clicking here.").pack(
-            anchor=tk.CENTER)
-        create_button(self.tab2, text="Skip", command=lambda: self.tabControl.select(self.tab3)).pack(anchor=tk.CENTER)
-        create_button(self.tab2, text="Reverse", command=self.call_reverse).pack(anchor=tk.CENTER)
+                    text="Since this program likes the last added song first, you need to reverse the playlist if "
+                    "you want to keep the exact same playlists.\nBut this step is not mandatory, you can skip "
+                    "it if you don't mind by clicking here.").pack(
+            anchor=tk.CENTER, expand=True)
+        create_button(self.tab2, text="Skip", command=lambda: self.tabControl.select(self.tab3)).pack(anchor=tk.CENTER, expand=True)
+        create_button(self.tab2, text="Reverse", command=self.call_reverse).pack(anchor=tk.CENTER, expand=True)
 
         # tab3
-        create_label(self.tab3, text="Now, you can load your liked songs.").pack(anchor=tk.CENTER)
+        create_label(self.tab3, text="Now, you can load your liked songs.").pack(anchor=tk.CENTER, expand=True)
         create_button(self.tab3, text="Load", command=lambda: self.call_func(cli.load_liked, self.tab4)).pack(
-            anchor=tk.CENTER)
+            anchor=tk.CENTER, expand=True)
 
         # tab4
         create_label(self.tab4, text="Here, you can get a list of your playlists, with their ID.").pack(
-            anchor=tk.CENTER)
+            anchor=tk.CENTER, expand=True)
         create_button(self.tab4, text="List", command=lambda: self.call_func(cli.list_playlists, self.tab5)).pack(
-            anchor=tk.CENTER)
+            anchor=tk.CENTER, expand=True)
 
         # tab5
         create_label(self.tab5,
-                     text="Here, you can copy all your playlists from Spotify to YT Music. Please note that this step "
-                          "can take a long time since songs are added one by one.").pack(
-            anchor=tk.CENTER)
+                    text="Here, you can copy all your playlists from Spotify to YT Music. Please note that this step "
+                    "can take a long time since songs are added one by one.").pack(
+            anchor=tk.CENTER, expand=True)
         create_button(self.tab5, text="Copy", command=lambda: self.call_func(cli.copy_all_playlists, self.tab6)).pack(
-            anchor=tk.CENTER)
+            anchor=tk.CENTER, expand=True)
 
         # tab6
         create_label(self.tab6, text="Here, you can copy a specific playlist from Spotify to YT Music.").pack(
-            anchor=tk.CENTER)
-        create_label(self.tab6, text="Spotify playlist ID:").pack(anchor=tk.CENTER)
+            anchor=tk.CENTER, expand=True)
+        create_label(self.tab6, text="Spotify playlist ID:").pack(anchor=tk.CENTER, expand=True)
         self.spotify_playlist_id = tk.Entry(self.tab6)
-        self.spotify_playlist_id.pack(anchor=tk.CENTER)
-        create_label(self.tab6, text="YT Music playlist ID:").pack(anchor=tk.CENTER)
+        self.spotify_playlist_id.pack(anchor=tk.CENTER, expand=True)
+        create_label(self.tab6, text="YT Music playlist ID:").pack(anchor=tk.CENTER, expand=True)
         self.yt_playlist_id = tk.Entry(self.tab6)
-        self.yt_playlist_id.pack(anchor=tk.CENTER)
-        create_button(self.tab6, text="Copy", command=self.call_copy_playlist).pack(anchor=tk.CENTER)
+        self.yt_playlist_id.pack(anchor=tk.CENTER, expand=True)
+        create_button(self.tab6, text="Copy", command=self.call_copy_playlist).pack(anchor=tk.CENTER, expand=True)
 
     def redirector(self, input_str):
+        """
+        Inserts the input string into the logs widget and disables editing.
+    
+        Args:
+            self: The instance of the class.
+            input_str (str): The string to be inserted into the logs' widget.
+        """
         self.logs.config(state=tk.NORMAL)
         self.logs.insert(tk.INSERT, input_str)
         self.logs.config(state=tk.DISABLED)
@@ -137,7 +152,7 @@ class Window:
             print("Please enter both playlist IDs")
             return
         th = threading.Thread(target=cli.copy_playlist,
-                              args=(self.spotify_playlist_id.get(), self.yt_playlist_id.get()))
+                                args=(self.spotify_playlist_id.get(), self.yt_playlist_id.get()))
         th.start()
         while th.is_alive():
             self.root.update()

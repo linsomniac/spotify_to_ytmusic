@@ -135,7 +135,6 @@ def lookup_song(yt, track_name: str, artist_name, album_name):
     for song in songs:
         # Remove everything in brackets in the song title
         song_title_without_brackets = re.sub(r'[\[\(].*?[\]\)]', '', song["title"])
-        print(song_title_without_brackets, track_name)
         if (
             song_title_without_brackets == track_name
             and song["artists"][0]["name"] == artist_name
@@ -158,7 +157,7 @@ def lookup_song(yt, track_name: str, artist_name, album_name):
             print("Not found in songs, searching videos")
             new_songs = yt.search(query=f"{track_name} by {artist_name}", filter="videos") # Search videos
             
-            # From here, we seach for videos reposting the song. They often contain the name of it and the artist. Like with 'Nekfeu - Ecrire'.
+            # From here, we search for videos reposting the song. They often contain the name of it and the artist. Like with 'Nekfeu - Ecrire'.
             for new_song in new_songs:
                 new_song_title = new_song["title"].lower() # People sometimes mess up the capitalization in the title
                 if (track_name in new_song_title and artist_name in new_song_title) or (track_name in new_song_title):
@@ -227,15 +226,10 @@ def load_liked():
 
         return parser.parse_args()
 
-    try:
-        args = parse_arguments()
-        dry_run = args.dry_run
-        track_sleep = args.track_sleep
-        spotify_playlists_encoding = args.spotify_playlists_encoding
-    except:
-        dry_run = False
-        track_sleep = 0.1
-        spotify_playlists_encoding = "utf-8"
+    args = parse_arguments()
+    dry_run = args.dry_run
+    track_sleep = args.track_sleep
+    spotify_playlists_encoding = args.spotify_playlists_encoding
 
     copier(
         None,
@@ -246,7 +240,7 @@ def load_liked():
     )
 
 
-def copy_playlist(src_pl_id = "", dst_pl_id = ""):
+def copy_playlist(src_pl_id="", dst_pl_id=""):
     """
     Copy a Spotify playlist to a YTMusic playlist
     """
@@ -267,12 +261,14 @@ def copy_playlist(src_pl_id = "", dst_pl_id = ""):
         parser.add_argument(
             "spotify_playlist_id",
             type=str,
+            default="",
             help="ID of the Spotify playlist to copy from",
         )
         parser.add_argument(
             "ytmusic_playlist_id",
             type=str,
-            help="ID of the YTMusic playlist to copy to.  If this argument starts with a '+', it is asumed to be the playlist title rather than playlist ID, and if a playlist of that name is not found, it will be created (without the +).  Example: '+My Favorite Blues'.  NOTE: The shell will require you to quote the name if it contains spaces.",
+            default="",
+            help="ID of the YTMusic playlist to copy to.  If this argument starts with a '+', it is assumed to be the playlist title rather than playlist ID, and if a playlist of that name is not found, it will be created (without the +).  Example: '+My Favorite Blues'.  NOTE: The shell will require you to quote the name if it contains spaces.",
         )
         parser.add_argument(
             "--spotify-playlists-encoding",
@@ -281,18 +277,13 @@ def copy_playlist(src_pl_id = "", dst_pl_id = ""):
         )
 
         return parser.parse_args()
-    
-    try:
-        args = parse_arguments()
-        src_pl_id = args.spotify_playlist_id
-        dst_pl_id = args.ytmusic_playlist_id
-        dry_run = args.dry_run
-        track_sleep = args.track_sleep
-        spotify_playlists_encoding = args.spotify_playlists_encoding
-    except:
-        dry_run = False
-        track_sleep = 0.1
-        spotify_playlists_encoding = "utf-8"
+
+    args = parse_arguments()
+    src_pl_id = args.spotify_playlist_id
+    dst_pl_id = args.ytmusic_playlist_id
+    dry_run = args.dry_run
+    track_sleep = args.track_sleep
+    spotify_playlists_encoding = args.spotify_playlists_encoding
 
     yt = get_ytmusic()
     if dst_pl_id.startswith("+"):
@@ -300,7 +291,7 @@ def copy_playlist(src_pl_id = "", dst_pl_id = ""):
 
         dst_pl_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
-        if dst_pl_id is None:
+        if dst_pl_id == "":
             dst_pl_id = _ytmusic_create_playlist(yt, title=pl_name, description=pl_name)
             time.sleep(1)  # seems to be needed to avoid missing playlist ID error
 
@@ -326,11 +317,13 @@ def copy_all_playlists():
     """
     yt = YTMusic("oauth.json")
 
+
     def parse_arguments():
         parser = ArgumentParser()
         parser.add_argument(
             "-i", "--input",
             type=str,
+            default="playlists.json",
             help="Filename of Spotify playlists.json file")
         parser.add_argument(
             "--track-sleep",
@@ -350,19 +343,13 @@ def copy_all_playlists():
         )
 
         return parser.parse_args()
-    
-    try:
-        args = parse_arguments()
-        dry_run = args.dry_run
-        track_sleep = args.track_sleep
-        spotify_playlists_encoding = args.spotify_playlists_encoding
-        input_file = args.input
-    except:
-        dry_run = False
-        track_sleep = 0.1
-        spotify_playlists_encoding = "utf-8"
-        input_file = "playlists.json"
-        
+
+    args = parse_arguments()
+    dry_run = args.dry_run
+    track_sleep = args.track_sleep
+    spotify_playlists_encoding = args.spotify_playlists_encoding
+    input_file = args.input
+
     spotify_pls = load_playlists_json(filename=input_file)
 
     for src_pl in spotify_pls["playlists"]:
@@ -372,7 +359,7 @@ def copy_all_playlists():
         pl_name = src_pl["name"]
         dst_pl_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
-        if dst_pl_id is None:
+        if dst_pl_id == "":
             dst_pl_id = _ytmusic_create_playlist(yt, title=pl_name, description=pl_name)
             time.sleep(1)  # seems to be needed to avoid missing playlist ID error
 
