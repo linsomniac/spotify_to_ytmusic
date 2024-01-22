@@ -310,6 +310,11 @@ def copy_all_playlists():
             continue
 
         pl_name = src_pl["name"]
+        if pl_name is "":
+            # Prevents 400 Bad request when creating new playlist.
+            # I dont know what to put there but yt api doesnt like empty string
+            pl_name = "NO_NAME"
+            
         dst_pl_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
         if dst_pl_id is None:
