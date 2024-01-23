@@ -293,7 +293,7 @@ def copy_all_playlists():
     """
     Copy all Spotify playlists (except Liked Songs) to YTMusic playlists
     """
-    yt = YTMusic("oauth.json")
+    yt = get_ytmusic()
 
     def parse_arguments():
         parser = ArgumentParser()
@@ -325,11 +325,7 @@ def copy_all_playlists():
 
         pl_name = src_pl["name"]
         if pl_name == "":
-            print(f"Skipping unnamed Spotify Playlist, id={src_pl['id']}")
-            print(
-                "  YTMusic cannot look up unnamed playlists, you will need to manually copy this playlist."
-            )
-            continue
+            pl_name = f"Unnamed Spotify Playlist {src_pl['id']}"
 
         dst_pl_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
