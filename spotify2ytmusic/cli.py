@@ -34,6 +34,20 @@ def get_playlist_id_by_name(yt: YTMusic, title: str) -> Optional[str]:
     return None
 
 
+def list_albums():
+    """
+    List albums that have been liked.
+    """
+    spotify_pls = load_playlists_json()
+    for album in [x["album"] for x in spotify_pls["albums"]]:
+        # print(album["tracks"])
+        # print()
+        # print(album["tracks"].keys())
+        # break
+        for track in album["tracks"]["items"]:
+            print(f"{album['name']} - {track['artists'][0]['name']} - {track['name']}")
+
+
 def list_playlists():
     """
     List the playlists on Spotify and YTMusic
@@ -315,7 +329,7 @@ def copy_all_playlists():
     """
     Copy all Spotify playlists (except Liked Songs) to YTMusic playlists
     """
-    yt = YTMusic("oauth.json")
+    yt = get_ytmusic()
 
 
     def parse_arguments():
@@ -357,6 +371,9 @@ def copy_all_playlists():
             continue
 
         pl_name = src_pl["name"]
+        if pl_name == "":
+            pl_name = f"Unnamed Spotify Playlist {src_pl['id']}"
+
         dst_pl_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
         if dst_pl_id == "":
