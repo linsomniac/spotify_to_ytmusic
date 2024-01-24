@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import subprocess
 import sys
@@ -24,7 +26,7 @@ class Window:
         self.root.title("Spotify to YT Music")
         self.root.geometry("1280x720")
         self.root.config(background="#26242f")
-        
+
         style = ttk.Style()
         style.theme_use('default')
         style.configure("TNotebook.Tab", background="#121212", foreground="white")  # Set the background color to #121212 when not selected
@@ -43,11 +45,9 @@ class Window:
 
         # Create a Frame for the tabs
         self.tab_frame = ttk.Frame(self.paned_window)
-        self.paned_window.add(self.tab_frame, weight=1)
+        self.paned_window.add(self.tab_frame, weight=2)
 
         # Create the TabControl (notebook)
-        
-
         self.tabControl = ttk.Notebook(self.tab_frame)
         self.tabControl.pack(fill=tk.BOTH, expand=1)
 
@@ -59,7 +59,8 @@ class Window:
         self.tab4 = ttk.Frame(self.tabControl)
         self.tab5 = ttk.Frame(self.tabControl)
         self.tab6 = ttk.Frame(self.tabControl)
-
+        self.tab7 = ttk.Frame(self.tabControl)
+        
         self.tabControl.add(self.tab0, text='Login to YT Music')
         self.tabControl.add(self.tab1, text='Spotify backup')
         self.tabControl.add(self.tab2, text='Reverse playlist')
@@ -67,7 +68,8 @@ class Window:
         self.tabControl.add(self.tab4, text='List playlists')
         self.tabControl.add(self.tab5, text='Copy all playlists')
         self.tabControl.add(self.tab6, text='Copy a specific playlist')
-
+        self.tabControl.add(self.tab7, text='Settings')
+        
         # Create a Frame for the logs
         self.log_frame = ttk.Frame(self.paned_window)
         self.paned_window.add(self.log_frame, weight=1)
@@ -83,15 +85,16 @@ class Window:
         create_button(self.tab0, text="Login", command=self.yt_login).pack(anchor=tk.CENTER, expand=True)
 
         # tab1
-        create_label(self.tab1, text="First, you need to backup your spotify playlists").pack(anchor=tk.CENTER, expand=True)
+        create_label(self.tab1, text="First, you need to backup your spotify playlists").pack(anchor=tk.CENTER,
+                                                                                              expand=True)
         create_button(self.tab1, text="Backup", command=lambda: self.call_func(spotify_backup.main, self.tab2)).pack(
             anchor=tk.CENTER, expand=True)
 
         # tab2
         create_label(self.tab2,
-                    text="Since this program likes the last added song first, you need to reverse the playlist if "
-                    "you want to keep the exact same playlists.\nBut this step is not mandatory, you can skip "
-                    "it if you don't mind by clicking here.").pack(
+                     text="Since this program likes the last added song first, you need to reverse the playlist if "
+                          "you want to keep the exact same playlists.\nBut this step is not mandatory, you can skip "
+                          "it if you don't mind by clicking here.").pack(
             anchor=tk.CENTER, expand=True)
         create_button(self.tab2, text="Skip", command=lambda: self.tabControl.select(self.tab3)).pack(anchor=tk.CENTER, expand=True)
         create_button(self.tab2, text="Reverse", command=self.call_reverse).pack(anchor=tk.CENTER, expand=True)
@@ -109,8 +112,8 @@ class Window:
 
         # tab5
         create_label(self.tab5,
-                    text="Here, you can copy all your playlists from Spotify to YT Music. Please note that this step "
-                    "can take a long time since songs are added one by one.").pack(
+                     text="Here, you can copy all your playlists from Spotify to YT Music. Please note that this step "
+                          "can take a long time since songs are added one by one.").pack(
             anchor=tk.CENTER, expand=True)
         create_button(self.tab5, text="Copy", command=lambda: self.call_func(cli.copy_all_playlists, self.tab6)).pack(
             anchor=tk.CENTER, expand=True)
@@ -126,7 +129,13 @@ class Window:
         self.yt_playlist_id.pack(anchor=tk.CENTER, expand=True)
         create_button(self.tab6, text="Copy", command=self.call_copy_playlist).pack(anchor=tk.CENTER, expand=True)
 
-    def redirector(self, input_str):
+        self.box_var = tk.BooleanVar()
+        
+        # tab7
+        tk.Checkbutton(self.tab7, text="Auto scroll", variable=self.box_var, background="#696969", foreground="#ffffff", selectcolor="#26242f", border=1).pack(anchor=tk.CENTER, expand=True)
+
+        
+    def redirector(self, input_str="") -> None:
         """
         Inserts the input string into the logs widget and disables editing.
     
@@ -137,7 +146,8 @@ class Window:
         self.logs.config(state=tk.NORMAL)
         self.logs.insert(tk.INSERT, input_str)
         self.logs.config(state=tk.DISABLED)
-        self.logs.see(tk.END)
+        if self.box_var.get():
+            self.logs.see(tk.END)
 
     def call_func(self, func, next_tab):
         th = threading.Thread(target=func)
@@ -152,7 +162,7 @@ class Window:
             print("Please enter both playlist IDs")
             return
         th = threading.Thread(target=cli.copy_playlist,
-                                args=(self.spotify_playlist_id.get(), self.yt_playlist_id.get()))
+                              args=(self.spotify_playlist_id.get(), self.yt_playlist_id.get()))
         th.start()
         while th.is_alive():
             self.root.update()
@@ -191,7 +201,10 @@ class Window:
                     process = subprocess.Popen(command, creationflags=subprocess.CREATE_NEW_CONSOLE)
                     process.communicate()
                 else:  # For Unix and Linux
-                    subprocess.call('xterm -e ytmusicapi oauth', shell=True, stdout=subprocess.PIPE)
+                    try:
+                        subprocess.call('x-terminal-emulator -e ytmusicapi oauth', shell=True, stdout=subprocess.PIPE)
+                    except:
+                        subprocess.call('xterm -e ytmusicapi oauth', shell=True, stdout=subprocess.PIPE)
 
             self.tabControl.select(self.tab1)
             print()
