@@ -38,6 +38,7 @@ Then you can run the following commands to run the individual s2yt commands:
 - For s2yt_create_playlist: `python3 -m spotify2ytmusic.create_playlist`
 - For s2yt_list_playlists: `python3 -m spotify2ytmusic.list_playlists`
 - For s2yt_load_liked: `python3 -m spotify2ytmusic.load_liked`
+- For s2yt_load_liked_albums: `python3 -m spotify2ytmusic.load_liked_albums`
 
 ## Login to YTMusic
 
@@ -72,6 +73,13 @@ the song from spotify and then the song that it found on YTMusic that it is liki
 spot-checked my songs and it seems to be doing a good job of matching YTMusic songs with
 Spotify.  So far I haven't seen a single failure across a couple thousand songs, but more
 esoteric titles it may have issues with.
+
+## Import Your Liked Albums
+
+Run: `s2yt_load_liked_albums`
+
+Spotify stores liked albums outside of the "Liked Songs" playlist.  This is the command to
+load your liked albums into YTMusic liked songs.
 
 ## List Your Playlists
 
