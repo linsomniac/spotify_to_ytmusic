@@ -13,17 +13,28 @@ from collections import namedtuple
 SongInfo = namedtuple("SongInfo", ["title", "artist", "album"])
 
 
-def iter_spotify_liked_albums() -> Iterator[SongInfo]:
+def iter_spotify_liked_albums(
+    spotify_playlist_file: str = "playlists.json",
+    spotify_encoding: str = "utf-8",
+) -> Iterator[SongInfo]:
     """Songs from liked albums on Spotify."""
-    spotify_pls = load_playlists_json()
+    spotify_pls = load_playlists_json(spotify_playlist_file, spotify_encoding)
+
+    if not "albums" in spotify_pls:
+        return None
+
     for album in [x["album"] for x in spotify_pls["albums"]]:
         for track in album["tracks"]["items"]:
             yield SongInfo(track["name"], track["artists"][0]["name"], album["name"])
 
 
-def iter_spotify_playlist(src_pl_id: Optional[str] = None) -> Iterator[SongInfo]:
+def iter_spotify_playlist(
+    src_pl_id: Optional[str] = None,
+    spotify_playlist_file: str = "playlists.json",
+    spotify_encoding: str = "utf-8",
+) -> Iterator[SongInfo]:
     """Songs from a specific album ("Liked Songs" if None)"""
-    spotify_pls = load_playlists_json()
+    spotify_pls = load_playlists_json(spotify_playlist_file, spotify_encoding)
 
     for src_pl in spotify_pls["playlists"]:
         if src_pl_id is None:
@@ -260,11 +271,10 @@ def load_liked_albums():
     spotify_pls = load_playlists_json()
 
     copier(
-        iter_spotify_liked_albums(),
+        iter_spotify_liked_albums(spotify_encoding=args.spotify_playlists_encoding),
         None,
         args.dry_run,
         args.track_sleep,
-        spotify_encoding=args.spotify_playlists_encoding,
     )
 
 
@@ -297,11 +307,10 @@ def load_liked():
     args = parse_arguments()
 
     copier(
-        iter_spotify_playlist(None),
+        iter_spotify_playlist(None, spotify_encoding=args.spotify_playlists_encoding),
         None,
         args.dry_run,
         args.track_sleep,
-        spotify_encoding=args.spotify_playlists_encoding,
     )
 
 
@@ -362,12 +371,13 @@ def copy_playlist():
             print(f"NOTE: Created playlist '{pl_name}' with ID: {dst_pl_id}")
 
     copier(
-        iter_spotify_playlist(src_pl_id),
+        iter_spotify_playlist(
+            src_pl_id, spotify_encoding=args.spotify_playlists_encoding
+        ),
         dst_pl_id,
         args.dry_run,
         args.track_sleep,
         yt=yt,
-        spotify_encoding=args.spotify_playlists_encoding,
     )
 
 
@@ -422,11 +432,12 @@ def copy_all_playlists():
             print(f"NOTE: Created playlist '{pl_name}' with ID: {dst_pl_id}")
 
         copier(
-            iter_spotify_playlist(src_pl["id"]),
+            iter_spotify_playlist(
+                src_pl["id"], spotify_encoding=args.spotify_playlists_encoding
+            ),
             dst_pl_id,
             args.dry_run,
             args.track_sleep,
-            spotify_encoding=args.spotify_playlists_encoding,
         )
         print("\nPlaylist done!\n")
 
@@ -443,15 +454,12 @@ def copier(
     dst_pl_id: Optional[str] = None,
     dry_run: bool = False,
     track_sleep: float = 0.1,
-    spotify_playlist_file: str = "playlists.json",
     *,
-    spotify_encoding: str = "utf-8",
     yt: Optional[YTMusic] = None,
 ):
     if yt is None:
         yt = get_ytmusic()
 
-    spotify_pls = load_playlists_json(spotify_playlist_file, spotify_encoding)
     if dst_pl_id is not None:
         try:
             yt_pl = yt.get_playlist(playlistId=dst_pl_id)
