@@ -132,7 +132,10 @@ class Window:
         self.box_var = tk.BooleanVar()
         
         # tab7
-        tk.Checkbutton(self.tab7, text="Auto scroll", variable=self.box_var, background="#696969", foreground="#ffffff", selectcolor="#26242f", border=1).pack(anchor=tk.CENTER, expand=True)
+        auto_scroll = tk.Checkbutton(self.tab7, text="Auto scroll", variable=self.box_var, background="#696969", foreground="#ffffff", selectcolor="#26242f", border=1)
+        auto_scroll.pack(anchor=tk.CENTER, expand=True)
+        auto_scroll.select()
+        
 
         
     def redirector(self, input_str="") -> None:
@@ -158,11 +161,18 @@ class Window:
         print()
 
     def call_copy_playlist(self):
-        if self.spotify_playlist_id.get() == "" or self.yt_playlist_id.get() == "":
-            print("Please enter both playlist IDs")
+        spotify_playlist_id = self.spotify_playlist_id.get()
+        yt_playlist_id = self.yt_playlist_id.get()
+
+        print()
+        
+        if spotify_playlist_id == "":
+            print("Please enter the Spotify playlist ID")
             return
-        th = threading.Thread(target=cli.copy_playlist,
-                              args=(self.spotify_playlist_id.get(), self.yt_playlist_id.get()))
+        if yt_playlist_id == "":
+            print("No Youtube playlist ID, creating one and naming it by the source playlist ID.")
+            cli.create_playlist(spotify_playlist_id, True)
+        th = threading.Thread(target=cli.copy_playlist, args=(spotify_playlist_id, yt_playlist_id))
         th.start()
         while th.is_alive():
             self.root.update()

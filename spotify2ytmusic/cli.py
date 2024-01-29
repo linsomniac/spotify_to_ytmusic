@@ -7,7 +7,66 @@ import time
 import re
 from argparse import ArgumentParser
 from ytmusicapi import YTMusic
-from typing import Optional, Union
+from typing import Optional, Union, Iterator
+from collections import namedtuple
+
+
+SongInfo = namedtuple("SongInfo", ["title", "artist", "album"])
+
+
+def iter_spotify_liked_albums(
+    spotify_playlist_file: str = "playlists.json",
+    spotify_encoding: str = "utf-8",
+) -> Iterator[SongInfo]:
+    """Songs from liked albums on Spotify."""
+    spotify_pls = load_playlists_json(spotify_playlist_file, spotify_encoding)
+
+    if not "albums" in spotify_pls:
+        return None
+
+    for album in [x["album"] for x in spotify_pls["albums"]]:
+        for track in album["tracks"]["items"]:
+            yield SongInfo(track["name"], track["artists"][0]["name"], album["name"])
+
+
+def iter_spotify_playlist(
+    src_pl_id: Optional[str] = None,
+    spotify_playlist_file: str = "playlists.json",
+    spotify_encoding: str = "utf-8",
+) -> Iterator[SongInfo]:
+    """Songs from a specific album ("Liked Songs" if None)"""
+    spotify_pls = load_playlists_json(spotify_playlist_file, spotify_encoding)
+
+    for src_pl in spotify_pls["playlists"]:
+        if src_pl_id is None:
+            if str(src_pl.get("name")) != "Liked Songs":
+                continue
+        else:
+            if str(src_pl.get("id")) != src_pl_id:
+                continue
+
+        src_pl_name = src_pl["name"]
+
+        print(f"== Spotify Playlist: {src_pl_name}")
+
+        for src_track in reversed(src_pl["tracks"]):
+            if src_track["track"] is None:
+                print(
+                    f"WARNING: Spotify track seems to be malformed, Skipping.  Track: {src_track!r}"
+                )
+                continue
+
+            try:
+                src_album_name = src_track["track"]["album"]["name"]
+                src_track_artist = src_track["track"]["artists"][0]["name"]
+            except TypeError as e:
+                print(
+                    f"ERROR: Spotify track seems to be malformed.  Track: {src_track!r}"
+                )
+                raise (e)
+            src_track_name = src_track["track"]["name"]
+
+            yield SongInfo(src_track_name, src_track_artist, src_album_name)
 
 
 def get_ytmusic() -> YTMusic:
@@ -34,18 +93,12 @@ def get_playlist_id_by_name(yt: YTMusic, title: str) -> Optional[str]:
     return None
 
 
-def list_albums():
+def list_liked_albums():
     """
     List albums that have been liked.
     """
-    spotify_pls = load_playlists_json()
-    for album in [x["album"] for x in spotify_pls["albums"]]:
-        # print(album["tracks"])
-        # print()
-        # print(album["tracks"].keys())
-        # break
-        for track in album["tracks"]["items"]:
-            print(f"{album['name']} - {track['artists'][0]['name']} - {track['name']}")
+    for song in iter_spotify_liked_albums():
+        print(f"{song.album} - {song.artist} - {song.title}")
 
 
 def list_playlists():
@@ -57,7 +110,7 @@ def list_playlists():
     spotify_pls = load_playlists_json()
 
     #  Liked music
-    print("== Spotify")
+    print("== Spotify playlists")
     for src_pl in spotify_pls["playlists"]:
         print(
             f"{src_pl.get('id')} - {src_pl['name']:50} ({len(src_pl['tracks'])} tracks)"
@@ -99,15 +152,16 @@ def _ytmusic_create_playlist(yt: YTMusic, title: str, description: str) -> str:
     return id
 
 
-def create_playlist():
+def create_playlist(pl_name="", use_param=False) -> None:
     """
     Create a YTMusic playlist
     """
-    if len(sys.argv) != 2:
-        print(f"usage: {os.path.basename(sys.argv[0])} <YT PLAYLIST NAME>")
-        sys.exit(1)
-
-    pl_name = sys.argv[1]
+    if not use_param:
+        if len(sys.argv) == 2:
+            pl_name = sys.argv[1]
+        else:
+            print(f"usage: {os.path.basename(sys.argv[0])} <YT PLAYLIST NAME>")
+            sys.exit(1)
 
     yt = get_ytmusic()
 
@@ -115,7 +169,7 @@ def create_playlist():
     print(f"Playlist ID: {id}")
 
 
-def lookup_song(yt, track_name: str, artist_name, album_name):
+def lookup_song(yt, track_name: str, artist_name: str, album_name: str):
     """Look up a song on YTMusic
 
     Given the Spotify track information, it does a lookup for the album by the same
@@ -127,7 +181,7 @@ def lookup_song(yt, track_name: str, artist_name, album_name):
     The idea is that finding the album and artist and then looking for the exact track
     match will be more likely to be accurate than searching for the song and artist and
     relying on the YTMusic algorithm to figure things out, especially for short tracks
-    that might have many contradictory hits like "Survival by Yes".
+    that might be have many contradictory hits like "Survival by Yes".
     """
     albums = yt.search(query=f"{album_name} by {artist_name}", filter="albums")
     
@@ -183,7 +237,6 @@ def lookup_song(yt, track_name: str, artist_name, album_name):
                 raise ValueError(f"Did not find {track_name} by {artist_name} from {album_name}")
         else:
             return songs[0]
-        # print(f"SONG: {song['videoId']} - {song['title']} - {song['artists'][0]['name']} - {song['album']['name']}")
 
 
 def search():
@@ -215,10 +268,50 @@ def search():
     print(ret)
 
 
+def load_liked_albums():
+    """
+    Load the "Liked" albums from Spotify into YTMusic.  Spotify stores liked albums separately
+    from liked songs, so "load_liked" does not see the albums, you instead need to use this.
+    """
+
+    def parse_arguments():
+        parser = ArgumentParser()
+        parser.add_argument(
+            "--track-sleep",
+            type=float,
+            default=0.1,
+            help="Time to sleep between each track that is added (default: 0.1)",
+        )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Do not add songs to destination playlist (default: False)",
+        )
+        parser.add_argument(
+            "--spotify-playlists-encoding",
+            default="utf-8",
+            help="The encoding of the `playlists.json` file.",
+        )
+
+        return parser.parse_args()
+
+    args = parse_arguments()
+
+    spotify_pls = load_playlists_json()
+
+    copier(
+        iter_spotify_liked_albums(spotify_encoding=args.spotify_playlists_encoding),
+        None,
+        args.dry_run,
+        args.track_sleep,
+    )
+
+
 def load_liked():
     """
     Load the "Liked Songs" playlist from Spotify into YTMusic.
     """
+
     def parse_arguments():
         parser = ArgumentParser()
         parser.add_argument(
@@ -246,11 +339,10 @@ def load_liked():
     spotify_playlists_encoding = args.spotify_playlists_encoding
 
     copier(
-        None,
+        iter_spotify_playlist(None, spotify_encoding=spotify_playlists_encoding),
         None,
         dry_run,
         track_sleep,
-        spotify_encoding=spotify_playlists_encoding,
     )
 
 
@@ -288,13 +380,13 @@ def copy_playlist(src_pl_id="", dst_pl_id=""):
             help="Do not add songs to destination playlist (default: False)",
         )
         parser.add_argument(
-            "spotify_playlist_id",
+            "-i", "--spotify_playlist_id",
             type=str,
             default="",
             help="ID of the Spotify playlist to copy from",
         )
         parser.add_argument(
-            "ytmusic_playlist_id",
+            "-o", "--ytmusic_playlist_id",
             type=str,
             default="",
             help="ID of the YTMusic playlist to copy to.  If this argument starts with a '+', it is assumed to be the playlist title rather than playlist ID, and if a playlist of that name is not found, it will be created (without the +).  Example: '+My Favorite Blues'.  NOTE: The shell will require you to quote the name if it contains spaces.",
@@ -308,23 +400,30 @@ def copy_playlist(src_pl_id="", dst_pl_id=""):
         return parser.parse_args()
 
     args = parse_arguments()
-    src_pl_id = args.spotify_playlist_id
-    dst_pl_id = args.ytmusic_playlist_id
+    if src_pl_id == "":
+        src_pl_id = args.spotify_playlist_id
+    if dst_pl_id == "":
+        dst_pl_id = args.ytmusic_playlist_id
     dry_run = args.dry_run
     track_sleep = args.track_sleep
     spotify_playlists_encoding = args.spotify_playlists_encoding
+    
+    print(dst_pl_id)
 
     yt = get_ytmusic()
     if dst_pl_id.startswith("+"):
         pl_name = dst_pl_id[1:]
+
         lookup_playlist(yt, pl_name)
+
     copier(
-        src_pl_id,
+        iter_spotify_playlist(
+            src_pl_id, spotify_encoding=spotify_playlists_encoding
+        ),
         dst_pl_id,
         dry_run,
         track_sleep,
         yt=yt,
-        spotify_encoding=spotify_playlists_encoding,
     )
 
 
@@ -379,11 +478,12 @@ def copy_all_playlists():
         dst_pl_id = lookup_playlist(yt, pl_name)
 
         copier(
-            src_pl["id"],
+            iter_spotify_playlist(
+                src_pl["id"], spotify_encoding=spotify_playlists_encoding
+            ),
             dst_pl_id,
             dry_run,
             track_sleep,
-            spotify_encoding=spotify_playlists_encoding,
         )
         print("\nPlaylist done!\n")
 
@@ -396,20 +496,17 @@ def load_playlists_json(filename: str = "playlists.json", encoding: str = "utf-8
 
 
 def copier(
-    src_pl_id: Optional[str] = None,
-    dst_pl_id: Optional[str] = None,
+    src_tracks: Iterator[SongInfo],
+    dst_pl_id: Optional[str] = "",
     dry_run: bool = False,
     track_sleep: float = 0.1,
-    spotify_playlist_file: str = "playlists.json",
     *,
-    spotify_encoding: str = "utf-8",
     yt: Optional[YTMusic] = None,
 ):
     if yt is None:
         yt = get_ytmusic()
 
-    spotify_pls = load_playlists_json(spotify_playlist_file, spotify_encoding)
-    if dst_pl_id is not None:
+    if dst_pl_id != "":
         try:
             yt_pl = yt.get_playlist(playlistId=dst_pl_id)
         except Exception as e:
@@ -425,82 +522,52 @@ def copier(
     duplicate_count = 0
     error_count = 0
 
-    for src_pl in spotify_pls["playlists"]:
-        if src_pl_id is None:
-            if str(src_pl.get("name")) != "Liked Songs":
-                continue
-        else:
-            if str(src_pl.get("id")) != src_pl_id:
-                continue
+    for src_track in src_tracks:
+        print(f"Spotify:   {src_track.title} - {src_track.artist} - {src_track.album}")
 
-        src_pl_name = src_pl["name"]
-
-        print(f"== Spotify Playlist: {src_pl_name}")
-
-        for src_track in src_pl["tracks"]:
-            if src_track["track"] is None:
-                print(
-                    f"WARNING: Spotify track seems to be malformed, Skipping.  Track: {src_track!r}"
-                )
-                continue
-
-            try:
-                src_album_name = src_track["track"]["album"]["name"]
-                src_track_artist = src_track["track"]["artists"][0]["name"]
-            except TypeError as e:
-                print(
-                    f"ERROR: Spotify track seems to be malformed.  Track: {src_track!r}"
-                )
-                raise (e)
-            src_track_name = src_track["track"]["name"]
-
-            print(
-                f"Spotify:   {src_track_name} - {src_track_artist} - {src_album_name}"
+        try:
+            dst_track = lookup_song(
+                yt, src_track.title, src_track.artist, src_track.album
             )
+        except Exception as e:
+            print(f"ERROR: Unable to look up song on YTMusic: {e}")
+            error_count += 1
+            continue
 
-            try:
-                dst_track = lookup_song(
-                    yt, src_track_name, src_track_artist, src_album_name
-                )
-            except Exception as e:
-                print(f"ERROR: Unable to look up song on YTMusic: {e}")
-                error_count += 1
-                continue
+        yt_artist_name = "<Unknown>"
+        if "artists" in dst_track and len(dst_track["artists"]) > 0:
+            yt_artist_name = dst_track["artists"][0]["name"]
+        print(
+            f"  Youtube: {dst_track['title']} - {yt_artist_name} - {dst_track['album'] if 'album' in dst_track.keys() else 'No album'}"
+        )
 
-            yt_artist_name = "<Unknown>"
-            if "artists" in dst_track and len(dst_track["artists"]) > 0:
-                yt_artist_name = dst_track["artists"][0]["name"]
-            print(
-                f"  Youtube: {dst_track['title']} - {yt_artist_name}  - {dst_track['album'] if 'album' in dst_track.keys() else ''}"   #  no album when video
-            )
+        if dst_track["videoId"] in tracks_added_set:
+            print("(DUPLICATE, this track has already been added)")
+            duplicate_count += 1
+        tracks_added_set.add(dst_track["videoId"])
 
-            if dst_track["videoId"] in tracks_added_set:
-                print("(DUPLICATE, this track has already been added)")
-                duplicate_count += 1
-            tracks_added_set.add(dst_track["videoId"])
-
-            if not dry_run:
-                exception_sleep = 5
-                for _ in range(10):
-                    try:
-                        if dst_pl_id is not None:
-                            yt.add_playlist_items(
-                                playlistId=dst_pl_id,
-                                videoIds=[dst_track["videoId"]],
-                                duplicates=False,
-                            )
-                        else:
-                            yt.rate_song(dst_track["videoId"], "LIKE")
-                        break
-                    except Exception as e:
-                        print(
-                            f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e} in {exception_sleep} seconds"
+        if not dry_run:
+            exception_sleep = 5
+            for _ in range(10):
+                try:
+                    if dst_pl_id != "":
+                        yt.add_playlist_items(
+                            playlistId=dst_pl_id,
+                            videoIds=[dst_track["videoId"]],
+                            duplicates=False,
                         )
-                        time.sleep(exception_sleep)
-                        exception_sleep *= 2
+                    else:
+                        yt.rate_song(dst_track["videoId"], "LIKE")
+                    break
+                except Exception as e:
+                    print(
+                        f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e} in {exception_sleep} seconds"
+                    )
+                    time.sleep(exception_sleep)
+                    exception_sleep *= 2
 
-            if track_sleep:
-                time.sleep(track_sleep)
+        if track_sleep:
+            time.sleep(track_sleep)
 
     print()
     print(
