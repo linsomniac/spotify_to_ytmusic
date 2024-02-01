@@ -289,13 +289,18 @@ def search():
             type=str,
             help="Album name",
         )
+        parser.add_argument(
+            "--algo",
+            type=int,
+            default=0,
+            help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
+        )
         return parser.parse_args()
 
     args = parse_arguments()
 
     yt = get_ytmusic()
-    ret = lookup_song(yt, args.track_name, args.artist, args.album)
-    print(ret)
+    ret = lookup_song(yt, args.track_name, args.artist, args.album, args.algo)
 
 
 def load_liked_albums():
@@ -322,6 +327,12 @@ def load_liked_albums():
             default="utf-8",
             help="The encoding of the `playlists.json` file.",
         )
+        parser.add_argument(
+            "--algo",
+            type=int,
+            default=0,
+            help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
+        )
 
         return parser.parse_args()
 
@@ -334,6 +345,7 @@ def load_liked_albums():
         None,
         args.dry_run,
         args.track_sleep,
+        args.algo,
     )
 
 
@@ -360,6 +372,12 @@ def load_liked():
             default="utf-8",
             help="The encoding of the `playlists.json` file.",
         )
+        parser.add_argument(
+            "--algo",
+            type=int,
+            default=0,
+            help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
+        )
 
         return parser.parse_args()
 
@@ -367,12 +385,14 @@ def load_liked():
     dry_run = args.dry_run
     track_sleep = args.track_sleep
     spotify_playlists_encoding = args.spotify_playlists_encoding
+    algo = args.algo
 
     copier(
         iter_spotify_playlist(None, spotify_encoding=spotify_playlists_encoding),
         None,
         dry_run,
         track_sleep,
+        algo,
     )
 
 
@@ -426,6 +446,12 @@ def copy_playlist(src_pl_id="", dst_pl_id=""):
             default="utf-8",
             help="The encoding of the `playlists.json` file.",
         )
+        parser.add_argument(
+            "--algo",
+            type=int,
+            default=0,
+            help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
+        )
 
         return parser.parse_args()
 
@@ -437,6 +463,7 @@ def copy_playlist(src_pl_id="", dst_pl_id=""):
     dry_run = args.dry_run
     track_sleep = args.track_sleep
     spotify_playlists_encoding = args.spotify_playlists_encoding
+    algo = args.algo
     
     print(dst_pl_id)
 
@@ -453,6 +480,7 @@ def copy_playlist(src_pl_id="", dst_pl_id=""):
         dst_pl_id,
         dry_run,
         track_sleep,
+        algo,
         yt=yt,
     )
 
@@ -486,6 +514,12 @@ def copy_all_playlists():
             default="utf-8",
             help="The encoding of the `playlists.json` file.",
         )
+        parser.add_argument(
+            "--algo",
+            type=int,
+            default=0,
+            help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
+        )
 
         return parser.parse_args()
 
@@ -494,6 +528,7 @@ def copy_all_playlists():
     track_sleep = args.track_sleep
     spotify_playlists_encoding = args.spotify_playlists_encoding
     input_file = args.input
+    algo = args.algo
 
     spotify_pls = load_playlists_json(filename=input_file)
 
@@ -514,6 +549,7 @@ def copy_all_playlists():
             dst_pl_id,
             dry_run,
             track_sleep,
+            algo
         )
         print("\nPlaylist done!\n")
 
@@ -530,6 +566,7 @@ def copier(
     dst_pl_id: Optional[str] = "",
     dry_run: bool = False,
     track_sleep: float = 0.1,
+    algo: int = 0,  # 0 == exact, 1 == extended, 2 == approximate
     *,
     yt: Optional[YTMusic] = None,
 ):
@@ -556,9 +593,7 @@ def copier(
         print(f"Spotify:   {src_track.title} - {src_track.artist} - {src_track.album}")
 
         try:
-            dst_track = lookup_song(
-                yt, src_track.title, src_track.artist, src_track.album
-            )
+            dst_track = lookup_song(yt, src_track.title, src_track.artist, src_track.album, algo)
         except Exception as e:
             print(f"ERROR: Unable to look up song on YTMusic: {e}")
             error_count += 1
@@ -567,6 +602,7 @@ def copier(
         yt_artist_name = "<Unknown>"
         if "artists" in dst_track and len(dst_track["artists"]) > 0:
             yt_artist_name = dst_track["artists"][0]["name"]
+        print(dst_track)
         print(
             f"  Youtube: {dst_track['title']} - {yt_artist_name} - {dst_track['album'] if 'album' in dst_track.keys() else 'No album'}"
         )
