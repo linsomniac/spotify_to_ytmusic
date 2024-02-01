@@ -4,6 +4,7 @@ import os
 import subprocess
 import sys
 import threading
+import json
 import tkinter as tk
 from tkinter import ttk
 
@@ -12,7 +13,7 @@ import spotify_backup
 from reverse_playlist import reverse_playlist
 
 
-def create_label(parent, text, **kwargs):
+def create_label(parent, text, **kwargs) -> tk.Label:
     return tk.Label(parent, text=text, font=("Helvetica", 14), background="#26242f", foreground="white", **kwargs)
 
 
@@ -38,6 +39,7 @@ class Window:
         sys.stdout.write = self.redirector
 
         self.root.after(1, lambda: self.yt_login(auto=True))
+        self.root.after(1, lambda: self.load_write_settings(0))
 
         # Create a PanedWindow with vertical orientation
         self.paned_window = ttk.PanedWindow(self.root, orient=tk.VERTICAL)
@@ -128,14 +130,23 @@ class Window:
         self.yt_playlist_id = tk.Entry(self.tab6)
         self.yt_playlist_id.pack(anchor=tk.CENTER, expand=True)
         create_button(self.tab6, text="Copy", command=self.call_copy_playlist).pack(anchor=tk.CENTER, expand=True)
-
-        self.box_var = tk.BooleanVar()
         
         # tab7
-        auto_scroll = tk.Checkbutton(self.tab7, text="Auto scroll", variable=self.box_var, background="#696969", foreground="#ffffff", selectcolor="#26242f", border=1)
+        self.var_scroll = tk.BooleanVar()
+        
+        auto_scroll = tk.Checkbutton(self.tab7, text="Auto scroll", variable=self.var_scroll, command=lambda: self.load_write_settings(1), background="#696969", foreground="#ffffff", selectcolor="#26242f", border=1)
         auto_scroll.pack(anchor=tk.CENTER, expand=True)
         auto_scroll.select()
         
+        self.var_algo = tk.IntVar()
+        self.var_algo.set(0)
+        
+        self.algo_label = create_label(self.tab7, text=f"Algorithm: ")
+        self.algo_label.pack(anchor=tk.CENTER, expand=True)
+        
+        menu_algo = tk.OptionMenu(self.tab7, self.var_algo, 0, *[1, 2], command=lambda x: self.load_write_settings(1))
+        menu_algo.pack(anchor=tk.CENTER, expand=True)
+        menu_algo.config(background="#696969", foreground="#ffffff", border=1)
 
         
     def redirector(self, input_str="") -> None:
@@ -149,7 +160,7 @@ class Window:
         self.logs.config(state=tk.NORMAL)
         self.logs.insert(tk.INSERT, input_str)
         self.logs.config(state=tk.DISABLED)
-        if self.box_var.get():
+        if self.var_scroll.get():
             self.logs.see(tk.END)
 
     def call_func(self, func, next_tab):
@@ -195,7 +206,7 @@ class Window:
             self.tabControl.select(self.tab3)
             print()
 
-    def yt_login(self, auto=False):
+    def yt_login(self, auto=False) -> None:
         def run_in_thread():
             if os.path.exists("oauth.json"):
                 print("File detected, auto login")
@@ -222,6 +233,32 @@ class Window:
         # Run the function in a separate thread
         th = threading.Thread(target=run_in_thread)
         th.start()
+    
+    def load_write_settings(self, action: int) -> None:
+        texts = {0: "Exact match", 1: "Fuzzy match", 2: "Fuzzy match with videos"}
+        
+        exist = True
+        if action == 0:
+            with open("settings.json", "a+") as f:
+                pass
+            with open("settings.json", "r+") as f:
+                value = f.read()
+                if value == "":
+                    exist = False
+            if exist:
+                with open("settings.json", "r+") as f:
+                    settings = json.load(f)
+                    self.var_scroll.set(settings["auto_scroll"])
+                    self.var_algo.set(settings["algo_number"])
+        else:
+            with open("settings.json", "w+") as f:
+                settings = {}
+                settings["auto_scroll"] = self.var_scroll.get()
+                settings["algo_number"] = self.var_algo.get()
+                json.dump(settings, f)
+                
+        self.algo_label.config(text=f"Algorithm: {texts[self.var_algo.get()]}")
+        self.root.update()
 
 
 if __name__ == "__main__":
