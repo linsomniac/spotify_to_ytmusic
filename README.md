@@ -32,13 +32,14 @@ git clone git@github.com:linsomniac/spotify_to_ytmusic.git
 cd spotify_to_ytmusic
 ```
 
-Then you can run the following commands to run the individual s2yt commands:
+Then you can prefix the command you want to run with `python3 -m spotify2ytmusic`, for
+example:
 
-- For s2yt_copy_playlist: `python3 -m spotify2ytmusic.copy_playlist`
-- For s2yt_create_playlist: `python3 -m spotify2ytmusic.create_playlist`
-- For s2yt_list_playlists: `python3 -m spotify2ytmusic.list_playlists`
-- For s2yt_load_liked: `python3 -m spotify2ytmusic.load_liked`
-- For s2yt_load_liked_albums: `python3 -m spotify2ytmusic.load_liked_albums`
+```shell
+python3 -m spotify2ytmusic list_playlists
+python3 -m spotify2ytmusic load_liked
+[etc...]
+```
 
 ## Login to YTMusic
 

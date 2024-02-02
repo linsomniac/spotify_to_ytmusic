@@ -35,7 +35,7 @@ def list_playlists():
     """
     yt = get_ytmusic()
 
-    spotify_pls = load_playlists_json()
+    spotify_pls = backend.load_playlists_json()
 
     #  Liked music
     print("== Spotify")
@@ -163,7 +163,7 @@ def load_liked_albums():
 
     args = parse_arguments()
 
-    spotify_pls = load_playlists_json()
+    spotify_pls = backend.load_playlists_json()
 
     copier(
         backend.iter_spotify_liked_albums(
@@ -308,7 +308,7 @@ def copy_all_playlists():
         return parser.parse_args()
 
     args = parse_arguments()
-    spotify_pls = load_playlists_json()
+    spotify_pls = backend.load_playlists_json()
 
     for src_pl in spotify_pls["playlists"]:
         if str(src_pl.get("name")) == "Liked Songs":
@@ -341,11 +341,6 @@ def copy_all_playlists():
         print("\nPlaylist done!\n")
 
     print("All done!")
-
-
-def load_playlists_json(filename: str = "playlists.json", encoding: str = "utf-8"):
-    """Load the `playlists.json` Spotify playlist file"""
-    return json.load(open(filename, "r", encoding=encoding))
 
 
 def copier(
