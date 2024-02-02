@@ -260,7 +260,9 @@ def copy_playlist():
         dst_pl_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
         if dst_pl_id is None:
-            dst_pl_id = _ytmusic_create_playlist(yt, title=pl_name, description=pl_name)
+            dst_pl_id = backend._ytmusic_create_playlist(
+                yt, title=pl_name, description=pl_name
+            )
             time.sleep(1)  # seems to be needed to avoid missing playlist ID error
 
             #  create_playlist returns a dict if there was an error
@@ -321,7 +323,9 @@ def copy_all_playlists():
         dst_pl_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
         if dst_pl_id is None:
-            dst_pl_id = _ytmusic_create_playlist(yt, title=pl_name, description=pl_name)
+            dst_pl_id = backend._ytmusic_create_playlist(
+                yt, title=pl_name, description=pl_name
+            )
             time.sleep(1)  # seems to be needed to avoid missing playlist ID error
 
             #  create_playlist returns a dict if there was an error
