@@ -24,3 +24,9 @@ jobs:
 
     - name: Build with Briefcase
       run: briefcase create windows && briefcase build windows && briefcase package windows
+
+    - name: Upload installer as an artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: installer
+        path: dist/Spotify2YTMusic-*.msi
