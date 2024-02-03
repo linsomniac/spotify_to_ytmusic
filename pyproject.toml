@@ -29,7 +29,7 @@ project_name = "Spotify2YTMusic"
 bundle = "com.linsomniac"
 version = "0.1"
 
-[tool.briefcase.app.s2yt]
+[tool.briefcase.app.spotify2ytmusic]
 formal_name = "Spotify2YTMusic"
 description = "A tool for helping to convert Spotify playlists to YouTube Music"
 sources = ['spotify2ytmusic']
