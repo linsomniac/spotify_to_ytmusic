@@ -13,6 +13,24 @@ from collections import namedtuple
 SongInfo = namedtuple("SongInfo", ["title", "artist", "album"])
 
 
+def get_ytmusic() -> YTMusic:
+    """
+    @@@
+    """
+    if not os.path.exists("oauth.json"):
+        print("ERROR: No file 'oauth.json' exists in the current directory.")
+        print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
+        sys.exit(1)
+
+    try:
+        return YTMusic("oauth.json")
+    except json.decoder.JSONDecodeError as e:
+        print(f"ERROR: JSON Decode error while trying start YTMusic: {e}")
+        print("       This typically means a problem with a 'oauth.json' file.")
+        print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
+        sys.exit(1)
+
+
 def _ytmusic_create_playlist(yt: YTMusic, title: str, description: str) -> str:
     """Wrapper on ytmusic.create_playlist
 
@@ -62,21 +80,6 @@ def create_playlist(pl_name: str):
 
     id = _ytmusic_create_playlist(yt, title=pl_name, description=pl_name)
     print(f"Playlist ID: {id}")
-
-
-def get_ytmusic() -> YTMusic:
-    if not os.path.exists("oauth.json"):
-        print("ERROR: No file 'oauth.json' exists in the current directory.")
-        print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
-        sys.exit(1)
-
-    try:
-        return YTMusic("oauth.json")
-    except json.decoder.JSONDecodeError as e:
-        print(f"ERROR: JSON Decode error while trying start YTMusic: {e}")
-        print("       This typically means a problem with a 'oauth.json' file.")
-        print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
-        sys.exit(1)
 
 
 def iter_spotify_liked_albums(
@@ -132,3 +135,222 @@ def iter_spotify_playlist(
             src_track_name = src_track["track"]["name"]
 
             yield SongInfo(src_track_name, src_track_artist, src_album_name)
+
+
+def get_playlist_id_by_name(yt: YTMusic, title: str) -> Optional[str]:
+    """Look up a YTMusic playlist ID by name.  Return None if not found."""
+    for pl in yt.get_library_playlists(limit=5000):
+        if pl["title"] == title:
+            return pl["playlistId"]
+
+    return None
+
+
+def lookup_song(yt, track_name, artist_name, album_name):
+    """Look up a song on YTMusic
+
+    Given the Spotify track information, it does a lookup for the album by the same
+    artist on YTMusic, then looks at the first 3 hits looking for a track with exactly
+    the same name. In the event that it can't find that exact track, it then does
+    a search of songs for the track name by the same artist and simply returns the
+    first hit.
+
+    The idea is that finding the album and artist and then looking for the exact track
+    match will be more likely to be accurate than searching for the song and artist and
+    relying on the YTMusic algorithm to figure things out, especially for short tracks
+    that might be have many contradictory hits like "Survival by Yes".
+    """
+    albums = yt.search(query=f"{album_name} by {artist_name}", filter="albums")
+    for album in albums[:3]:
+        # print(album)
+        # print(f"ALBUM: {album['browseId']} - {album['title']} - {album['artists'][0]['name']}")
+
+        try:
+            for track in yt.get_album(album["browseId"])["tracks"]:
+                if track["title"] == track_name:
+                    return track
+            # print(f"{track['videoId']} - {track['title']} - {track['artists'][0]['name']}")
+        except Exception as e:
+            print(f"Unable to lookup album ({e}), continuing...")
+
+    songs = yt.search(query=f"{track_name} by {artist_name}", filter="songs")
+    return songs[0]
+
+    #  This would need to do fuzzy matching
+    for song in songs:
+        if (
+            song["title"] == track_name
+            and song["artists"][0]["name"] == artist_name
+            and song["album"]["name"] == album_name
+        ):
+            return song
+        # print(f"SONG: {song['videoId']} - {song['title']} - {song['artists'][0]['name']} - {song['album']['name']}")
+
+    raise ValueError(f"Did not find {track_name} by {artist_name} from {album_name}")
+
+
+def copier(
+    src_tracks: Iterator[SongInfo],
+    dst_pl_id: Optional[str] = None,
+    dry_run: bool = False,
+    track_sleep: float = 0.1,
+    *,
+    yt: Optional[YTMusic] = None,
+):
+    """
+    @@@
+    """
+    if yt is None:
+        yt = get_ytmusic()
+
+    if dst_pl_id is not None:
+        try:
+            yt_pl = yt.get_playlist(playlistId=dst_pl_id)
+        except Exception as e:
+            print(f"ERROR: Unable to find YTMusic playlist {dst_pl_id}: {e}")
+            print(
+                "       Make sure the YTMusic playlist ID is correct, it should be something like "
+            )
+            print("      'PL_DhcdsaJ7echjfdsaJFhdsWUd73HJFca'")
+            sys.exit(1)
+        print(f"== Youtube Playlist: {yt_pl['title']}")
+
+    tracks_added_set = set()
+    duplicate_count = 0
+    error_count = 0
+
+    for src_track in src_tracks:
+        print(f"Spotify:   {src_track.title} - {src_track.artist} - {src_track.album}")
+
+        try:
+            dst_track = lookup_song(
+                yt, src_track.title, src_track.artist, src_track.album
+            )
+        except Exception as e:
+            print(f"ERROR: Unable to look up song on YTMusic: {e}")
+            error_count += 1
+            continue
+
+        yt_artist_name = "<Unknown>"
+        if "artists" in dst_track and len(dst_track["artists"]) > 0:
+            yt_artist_name = dst_track["artists"][0]["name"]
+        print(
+            f"  Youtube: {dst_track['title']} - {yt_artist_name} - {dst_track['album']}"
+        )
+
+        if dst_track["videoId"] in tracks_added_set:
+            print("(DUPLICATE, this track has already been added)")
+            duplicate_count += 1
+        tracks_added_set.add(dst_track["videoId"])
+
+        if not dry_run:
+            exception_sleep = 5
+            for _ in range(10):
+                try:
+                    if dst_pl_id is not None:
+                        yt.add_playlist_items(
+                            playlistId=dst_pl_id,
+                            videoIds=[dst_track["videoId"]],
+                            duplicates=False,
+                        )
+                    else:
+                        yt.rate_song(dst_track["videoId"], "LIKE")
+                    break
+                except Exception as e:
+                    print(
+                        f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e} in {exception_sleep} seconds"
+                    )
+                    time.sleep(exception_sleep)
+                    exception_sleep *= 2
+
+        if track_sleep:
+            time.sleep(track_sleep)
+
+    print()
+    print(
+        f"Added {len(tracks_added_set)} tracks, encountered {duplicate_count} duplicates, {error_count} errors"
+    )
+
+
+def copy_playlist(
+    spotify_playlist_id: str,
+    ytmusic_playlist_id: str,
+    spotify_playlists_encoding: str = "utf-8",
+    dry_run: bool = False,
+    track_sleep: float = 0.1,
+):
+    """
+    Copy a Spotify playlist to a YTMusic playlist
+    @@@
+    """
+    yt = get_ytmusic()
+    if ytmusic_playlist_id.startswith("+"):
+        pl_name = ytmusic_playlist_id[1:]
+
+        ytmusic_playlist_id = get_playlist_id_by_name(yt, pl_name)
+        print(f"Looking up playlist '{pl_name}': id={ytmusic_playlist_id}")
+        if ytmusic_playlist_id is None:
+            ytmusic_playlist_id = _ytmusic_create_playlist(
+                yt, title=pl_name, description=pl_name
+            )
+            time.sleep(1)  # seems to be needed to avoid missing playlist ID error
+
+            #  create_playlist returns a dict if there was an error
+            if isinstance(ytmusic_playlist_id, dict):
+                print(f"ERROR: Failed to create playlist: {ytmusic_playlist_id}")
+                sys.exit(1)
+            print(f"NOTE: Created playlist '{pl_name}' with ID: {ytmusic_playlist_id}")
+
+    copier(
+        iter_spotify_playlist(
+            spotify_playlist_id, spotify_encoding=spotify_playlists_encoding
+        ),
+        ytmusic_playlist_id,
+        dry_run,
+        track_sleep,
+        yt=yt,
+    )
+
+
+def copy_all_playlists(
+    track_sleep: float = 0.1,
+    dry_run: bool = False,
+    spotify_playlists_encoding: str = "utf-8",
+):
+    """
+    Copy all Spotify playlists (except Liked Songs) to YTMusic playlists
+    """
+    spotify_pls = load_playlists_json()
+    yt = get_ytmusic()
+
+    for src_pl in spotify_pls["playlists"]:
+        if str(src_pl.get("name")) == "Liked Songs":
+            continue
+
+        pl_name = src_pl["name"]
+        if pl_name == "":
+            pl_name = f"Unnamed Spotify Playlist {src_pl['id']}"
+
+        dst_pl_id = get_playlist_id_by_name(yt, pl_name)
+        print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
+        if dst_pl_id is None:
+            dst_pl_id = _ytmusic_create_playlist(yt, title=pl_name, description=pl_name)
+            time.sleep(1)  # seems to be needed to avoid missing playlist ID error
+
+            #  create_playlist returns a dict if there was an error
+            if isinstance(dst_pl_id, dict):
+                print(f"ERROR: Failed to create playlist: {dst_pl_id}")
+                sys.exit(1)
+            print(f"NOTE: Created playlist '{pl_name}' with ID: {dst_pl_id}")
+
+        copier(
+            iter_spotify_playlist(
+                src_pl["id"], spotify_encoding=spotify_playlists_encoding
+            ),
+            dst_pl_id,
+            dry_run,
+            track_sleep,
+        )
+        print("\nPlaylist done!\n")
+
+    print("All done!")
