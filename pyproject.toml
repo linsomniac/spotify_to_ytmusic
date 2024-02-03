@@ -23,3 +23,13 @@ s2yt_create_playlist = "spotify2ytmusic.cli:create_playlist"
 s2yt_list_playlists = "spotify2ytmusic.cli:list_playlists"
 s2yt_search = "spotify2ytmusic.cli:search"
 s2yt_list_liked_albums = "spotify2ytmusic.cli:list_liked_albums"
+
+[tool.briefcase]
+project_name = "Spotify2YTMusic"
+bundle = "com.linsomniac"
+version = "0.1"
+
+[tool.briefcase.app.s2yt]
+formal_name = "Spotify2YTMusic"
+description = "A tool for helping to convert Spotify playlists to YouTube Music"
+sources = ['spotify2ytmusic']
