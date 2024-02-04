@@ -57,7 +57,7 @@ class Window:
         # Create the tabs
         self.tab0 = ttk.Frame(self.tabControl)
         self.tab1 = ttk.Frame(self.tabControl)
-        self.tab2 = ttk.Frame(self.tabControl)
+        # self.tab2 = ttk.Frame(self.tabControl)
         self.tab3 = ttk.Frame(self.tabControl)
         self.tab4 = ttk.Frame(self.tabControl)
         self.tab5 = ttk.Frame(self.tabControl)
@@ -66,7 +66,7 @@ class Window:
         
         self.tabControl.add(self.tab0, text='Login to YT Music')
         self.tabControl.add(self.tab1, text='Spotify backup')
-        self.tabControl.add(self.tab2, text='Reverse playlist')
+        # self.tabControl.add(self.tab2, text='Reverse playlist')
         self.tabControl.add(self.tab3, text='Load liked songs')
         self.tabControl.add(self.tab4, text='List playlists')
         self.tabControl.add(self.tab5, text='Copy all playlists')
