@@ -90,7 +90,7 @@ class Window:
         # tab1
         create_label(self.tab1, text="First, you need to backup your spotify playlists").pack(anchor=tk.CENTER,
                                                                                               expand=True)
-        create_button(self.tab1, text="Backup", command=lambda: self.call_func(spotify_backup.main, self.tab2)).pack(
+        create_button(self.tab1, text="Backup", command=lambda: self.call_func(spotify_backup.main, self.tab3)).pack(
             anchor=tk.CENTER, expand=True)
 
         # # tab2
