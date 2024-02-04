@@ -78,21 +78,21 @@ class Window:
         # Create the tabs
         self.tab0 = ttk.Frame(self.tabControl)
         self.tab1 = ttk.Frame(self.tabControl)
-        self.tab2 = ttk.Frame(self.tabControl)
+        # self.tab2 = ttk.Frame(self.tabControl)
         self.tab3 = ttk.Frame(self.tabControl)
         self.tab4 = ttk.Frame(self.tabControl)
         self.tab5 = ttk.Frame(self.tabControl)
         self.tab6 = ttk.Frame(self.tabControl)
         self.tab7 = ttk.Frame(self.tabControl)
-
-        self.tabControl.add(self.tab0, text="Login to YT Music")
-        self.tabControl.add(self.tab1, text="Spotify backup")
-        self.tabControl.add(self.tab2, text="Reverse playlist")
-        self.tabControl.add(self.tab3, text="Load liked songs")
-        self.tabControl.add(self.tab4, text="List playlists")
-        self.tabControl.add(self.tab5, text="Copy all playlists")
-        self.tabControl.add(self.tab6, text="Copy a specific playlist")
-        self.tabControl.add(self.tab7, text="Settings")
+        
+        self.tabControl.add(self.tab0, text='Login to YT Music')
+        self.tabControl.add(self.tab1, text='Spotify backup')
+        # self.tabControl.add(self.tab2, text='Reverse playlist')
+        self.tabControl.add(self.tab3, text='Load liked songs')
+        self.tabControl.add(self.tab4, text='List playlists')
+        self.tabControl.add(self.tab5, text='Copy all playlists')
+        self.tabControl.add(self.tab6, text='Copy a specific playlist')
+        self.tabControl.add(self.tab7, text='Settings')
 
         # Create a Frame for the logs
         self.log_frame = ttk.Frame(self.paned_window)
@@ -113,38 +113,28 @@ class Window:
         )
 
         # tab1
-        create_label(
-            self.tab1, text="First, you need to backup your spotify playlists"
-        ).pack(anchor=tk.CENTER, expand=True)
-        create_button(
-            self.tab1,
-            text="Backup",
-            command=lambda: self.call_func(spotify_backup.main, self.tab2),
-        ).pack(anchor=tk.CENTER, expand=True)
 
-        # tab2
-        create_label(
-            self.tab2,
-            text="Since this program likes the last added song first, you need to reverse the playlist if "
-            "you want to keep the exact same playlists.\nBut this step is not mandatory, you can skip "
-            "it if you don't mind by clicking here.",
-        ).pack(anchor=tk.CENTER, expand=True)
-        create_button(
-            self.tab2, text="Skip", command=lambda: self.tabControl.select(self.tab3)
-        ).pack(anchor=tk.CENTER, expand=True)
-        create_button(self.tab2, text="Reverse", command=self.call_reverse).pack(
-            anchor=tk.CENTER, expand=True
-        )
+        create_label(self.tab1, text="First, you need to backup your spotify playlists").pack(anchor=tk.CENTER,
+                                                                                              expand=True)
+        create_button(self.tab1, text="Backup", command=lambda: self.call_func(spotify_backup.main, self.tab3)).pack(
+            anchor=tk.CENTER, expand=True)
+
+        # # tab2
+        
+        # this was implemented in the backend.py file
+        
+        # create_label(self.tab2,
+        #              text="Since this program likes the last added song first, you need to reverse the playlist if "
+        #                   "you want to keep the exact same playlists.\nBut this step is not mandatory, you can skip "
+        #                   "it if you don't mind by clicking here.").pack(
+        #     anchor=tk.CENTER, expand=True)
+        # create_button(self.tab2, text="Skip", command=lambda: self.tabControl.select(self.tab3)).pack(anchor=tk.CENTER, expand=True)
+        # create_button(self.tab2, text="Reverse", command=self.call_reverse).pack(anchor=tk.CENTER, expand=True)
 
         # tab3
-        create_label(self.tab3, text="Now, you can load your liked songs.").pack(
-            anchor=tk.CENTER, expand=True
-        )
-        create_button(
-            self.tab3,
-            text="Load",
-            command=lambda: self.call_func(cli.load_liked, self.tab4),
-        ).pack(anchor=tk.CENTER, expand=True)
+        create_label(self.tab3, text="Now, you can load your liked songs.").pack(anchor=tk.CENTER, expand=True)
+        create_button(self.tab3, text="Load", command=self.call_load_liked_songs).pack(
+            anchor=tk.CENTER, expand=True)
 
         # tab4
         create_label(
@@ -232,6 +222,15 @@ class Window:
         self.logs.config(state=tk.DISABLED)
         if self.var_scroll.get():
             self.logs.see(tk.END)
+            
+    def call_load_liked_songs(self):
+        th = threading.Thread(target=backend.copier, args=(backend.iter_spotify_playlist(), None, False, 0.1, self.var_algo.get()))
+        th.start()
+        while th.is_alive():
+            self.root.update()
+
+        self.tabControl.select(self.tab4)
+        print()
 
     def call_func(self, func, next_tab):
         th = threading.Thread(target=func)
