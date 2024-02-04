@@ -107,7 +107,7 @@ class Window:
 
         # tab3
         create_label(self.tab3, text="Now, you can load your liked songs.").pack(anchor=tk.CENTER, expand=True)
-        create_button(self.tab3, text="Load", command=lambda: self.call_func(cli.load_liked, self.tab4)).pack(
+        create_button(self.tab3, text="Load", command=self.call_load_liked_songs).pack(
             anchor=tk.CENTER, expand=True)
 
         # tab4
@@ -166,6 +166,15 @@ class Window:
         self.logs.config(state=tk.DISABLED)
         if self.var_scroll.get():
             self.logs.see(tk.END)
+            
+    def call_load_liked_songs(self):
+        th = threading.Thread(target=backend.copier, args=(backend.iter_spotify_playlist(), None, False, 0.1, self.var_algo.get()))
+        th.start()
+        while th.is_alive():
+            self.root.update()
+
+        self.tabControl.select(self.tab4)
+        print()
 
     def call_func(self, func, next_tab):
         th = threading.Thread(target=func)

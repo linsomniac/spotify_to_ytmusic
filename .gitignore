@@ -4,3 +4,4 @@ __pycache__
 dist/
 spotify2ytmusic/playlists_backup.json
 spotify2ytmusic/settings.json
+spotify2ytmusic/test.py

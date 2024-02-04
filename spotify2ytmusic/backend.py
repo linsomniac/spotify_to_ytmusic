@@ -293,7 +293,7 @@ def copier(
         if "artists" in dst_track and len(dst_track["artists"]) > 0:
             yt_artist_name = dst_track["artists"][0]["name"]
         print(
-            f"  Youtube: {dst_track['title']} - {yt_artist_name} - {dst_track['album']}"
+            f"  Youtube: {dst_track['title']} - {yt_artist_name} - {dst_track['album'] if 'album' in dst_track else '<Unknown>'}"
         )
 
         if dst_track["videoId"] in tracks_added_set:
