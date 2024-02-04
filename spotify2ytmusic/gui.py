@@ -93,14 +93,17 @@ class Window:
         create_button(self.tab1, text="Backup", command=lambda: self.call_func(spotify_backup.main, self.tab2)).pack(
             anchor=tk.CENTER, expand=True)
 
-        # tab2
-        create_label(self.tab2,
-                     text="Since this program likes the last added song first, you need to reverse the playlist if "
-                          "you want to keep the exact same playlists.\nBut this step is not mandatory, you can skip "
-                          "it if you don't mind by clicking here.").pack(
-            anchor=tk.CENTER, expand=True)
-        create_button(self.tab2, text="Skip", command=lambda: self.tabControl.select(self.tab3)).pack(anchor=tk.CENTER, expand=True)
-        create_button(self.tab2, text="Reverse", command=self.call_reverse).pack(anchor=tk.CENTER, expand=True)
+        # # tab2
+        
+        # this was implemented in the backend.py file
+        
+        # create_label(self.tab2,
+        #              text="Since this program likes the last added song first, you need to reverse the playlist if "
+        #                   "you want to keep the exact same playlists.\nBut this step is not mandatory, you can skip "
+        #                   "it if you don't mind by clicking here.").pack(
+        #     anchor=tk.CENTER, expand=True)
+        # create_button(self.tab2, text="Skip", command=lambda: self.tabControl.select(self.tab3)).pack(anchor=tk.CENTER, expand=True)
+        # create_button(self.tab2, text="Reverse", command=self.call_reverse).pack(anchor=tk.CENTER, expand=True)
 
         # tab3
         create_label(self.tab3, text="Now, you can load your liked songs.").pack(anchor=tk.CENTER, expand=True)
