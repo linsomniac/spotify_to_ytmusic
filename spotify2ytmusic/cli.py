@@ -2,13 +2,9 @@
 
 import sys
 import os
-import time
 from argparse import ArgumentParser
-from ytmusicapi import YTMusic
-from typing import Optional, Union, Iterator
 
-from . import backend
-from .backend import SongInfo, get_ytmusic
+import backend
 
 
 def list_liked_albums():
@@ -72,12 +68,18 @@ def search():
             type=str,
             help="Album name",
         )
+        parser.add_argument(
+            "--algo",
+            type=int,
+            default=0,
+            help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
+        )
         return parser.parse_args()
 
     args = parse_arguments()
 
     yt = backend.get_ytmusic()
-    ret = backend.lookup_song(yt, args.track_name, args.artist, args.album)
+    ret = backend.lookup_song(yt, args.track_name, args.artist, args.album, args.algo)
     print(ret)
 
 
@@ -105,6 +107,12 @@ def load_liked_albums():
             default="utf-8",
             help="The encoding of the `playlists.json` file.",
         )
+        parser.add_argument(
+            "--algo",
+            type=int,
+            default=0,
+            help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
+        )
 
         return parser.parse_args()
 
@@ -119,6 +127,7 @@ def load_liked_albums():
         None,
         args.dry_run,
         args.track_sleep,
+        args.algo,
     )
 
 
@@ -145,6 +154,12 @@ def load_liked():
             default="utf-8",
             help="The encoding of the `playlists.json` file.",
         )
+        parser.add_argument(
+            "--algo",
+            type=int,
+            default=0,
+            help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
+        )
 
         return parser.parse_args()
 
@@ -157,6 +172,7 @@ def load_liked():
         None,
         args.dry_run,
         args.track_sleep,
+        
     )
 
 
