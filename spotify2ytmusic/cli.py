@@ -172,7 +172,7 @@ def load_liked():
         None,
         args.dry_run,
         args.track_sleep,
-        
+        args.algo,
     )
 
 
@@ -210,6 +210,12 @@ def copy_playlist():
             default="utf-8",
             help="The encoding of the `playlists.json` file.",
         )
+        parse_arguments(
+            "--algo",
+            type=int,
+            default=0,
+            help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
+        )
 
         return parser.parse_args()
 
@@ -245,6 +251,12 @@ def copy_all_playlists():
             "--spotify-playlists-encoding",
             default="utf-8",
             help="The encoding of the `playlists.json` file.",
+        )
+        parse_arguments(
+            "--algo",
+            type=int,
+            default=0,
+            help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
         )
 
         return parser.parse_args()

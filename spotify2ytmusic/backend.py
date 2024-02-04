@@ -251,6 +251,7 @@ def copier(
     dst_pl_id: Optional[str] = None,
     dry_run: bool = False,
     track_sleep: float = 0.1,
+    yt_search_algo: int = 0,
     *,
     yt: Optional[YTMusic] = None,
 ):
@@ -281,7 +282,7 @@ def copier(
 
         try:
             dst_track = lookup_song(
-                yt, src_track.title, src_track.artist, src_track.album
+                yt, src_track.title, src_track.artist, src_track.album, yt_search_algo
             )
         except Exception as e:
             print(f"ERROR: Unable to look up song on YTMusic: {e}")
@@ -335,6 +336,7 @@ def copy_playlist(
     spotify_playlists_encoding: str = "utf-8",
     dry_run: bool = False,
     track_sleep: float = 0.1,
+    yt_search_algo: int = 0,
 ):
     """
     Copy a Spotify playlist to a YTMusic playlist
@@ -365,6 +367,7 @@ def copy_playlist(
         ytmusic_playlist_id,
         dry_run,
         track_sleep,
+        yt_search_algo,
         yt=yt,
     )
 
@@ -373,6 +376,7 @@ def copy_all_playlists(
     track_sleep: float = 0.1,
     dry_run: bool = False,
     spotify_playlists_encoding: str = "utf-8",
+    yt_search_algo: int = 0,
 ):
     """
     Copy all Spotify playlists (except Liked Songs) to YTMusic playlists
@@ -407,6 +411,7 @@ def copy_all_playlists(
             dst_pl_id,
             dry_run,
             track_sleep,
+            yt_search_algo,
         )
         print("\nPlaylist done!\n")
 
