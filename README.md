@@ -3,7 +3,8 @@ Tools for moving from Spotify to YTMusic
 # Overview
 
 This is a set of scripts for copying "liked" songs and playlists from Spotify to YTMusic.
-There is also [a GUI version by Yoween available](https://github.com/Yoween/spotify_to_ytmusic_gui).
+It provides both CLI tools and a GUI (implemented by Yoween, formerly called
+[spotify_to_ytmusic_gui](https://github.com/Yoween/spotify_to_ytmusic_gui)).
 
 # Getting Started
 
@@ -41,7 +42,88 @@ python3 -m spotify2ytmusic load_liked
 [etc...]
 ```
 
-## Login to YTMusic
+## Graphical UI
+
+On Windows: `python gui.py`
+
+Or on Linux: `python3 gui.py`
+
+### Login to YTMusic - Tab 0
+
+#### Click the `login` button on the first tab
+
+OR
+
+Enter `ytmusicapi oauth` in a console.
+
+This will give you a URL, visit that URL and authorize the application.  When you are
+done with the import you can remove the authorization for this app.
+
+This will write a file "oauth.json".  Keep this file secret while the app is authorized.
+This file includes a logged in session token.
+
+ytmusicapi is a dependency of this software and should be installed as part of the "pip
+install".
+
+### Backup Your Spotify Playlists - Tab 1
+
+#### Click the `Backup` button, and wait until it finished and switched to the next tab.
+
+**OR** do all the steps below
+
+Download
+[spotify-backup](https://raw.githubusercontent.com/caseychu/spotify-backup/master/spotify-backup.py).
+
+Run `spotify-backup.py` and it will help you authorize access to your spotify account.
+
+Run: `python3 spotify-backup.py playlists.json --dump=liked,playlists --format=json`
+
+This will save your playlists and liked songs into the file "playlists.json".
+
+### Reverse your playlists - Tab 2
+As mentionned below, the original program adds the songs in the 'wrong' order. That's a
+feature I don't like, so I created a script to reverse them. It seems to be reliable,
+but if you find anything weird, please open an issue. It creates a backup of the
+original file just in case anyway.
+
+### Import Your Liked Songs - Tab 3
+#### Click the `import` button, and wait until it finished and switched to the next tab.
+
+It will go through your Spotify liked songs, and like them on YTMusic.  It will display
+the song from spotify and then the song that it found on YTMusic that it is liking.  I've
+spot-checked my songs and it seems to be doing a good job of matching YTMusic songs with
+Spotify.  So far I haven't seen a single failure across a couple hundread songs, but more
+esoteric titles it may have issues with.
+
+### List Your Playlists - Tab 4
+
+#### Click the `list` button, and wait until it finished and switched to the next tab.
+
+This will list the playlists you have on both Spotify and YTMusic, so you can individually copy them.
+
+### Copy Your Playlists - Tab 5
+
+You can either copy **all** playlists, or do a more surgical copy of individual playlists.
+Copying all playlists will use the name of the Spotify playlist as the destination playlist name on YTMusic.
+
+#### To copy all the playlists click the `copy` button, and wait until it finished and switched to the next tab.
+
+**NOTE**: This does not copy the Liked playlist (see above to do that).
+
+### Copy specific Playlist - Tab 6
+
+In the list output, find the "playlist id" (the first column) of the Spotify playlist and of the YTMusic playlist.
+#### Then fill both input fields and click the `copy` button.
+
+The copy playlist will take the name of the YTMusic playlist and will create the
+playlist if it does not exist, if you start the YTMusic playlist with a "+":
+
+Re-running "copy_playlist" or "load_liked" in the event that it fails should be safe, it
+will not duplicate entries on the playlist.
+
+## Command Line Usage
+
+### Login to YTMusic
 
 `ytmusicapi oauth`
 
@@ -54,7 +136,7 @@ This file includes a logged in session token.
 ytmusicapi is a dependency of this software and should be installed as part of the "pip
 install".
 
-## Backup Your Spotify Playlists
+### Backup Your Spotify Playlists
 
 Download
 [spotify-backup](https://raw.githubusercontent.com/caseychu/spotify-backup/master/spotify-backup.py).
@@ -65,7 +147,7 @@ Run: `python3 spotify-backup.py playlists.json --dump=liked,playlists --format=j
 
 This will save your playlists and liked songs into the file "playlists.json".
 
-## Import Your Liked Songs
+### Import Your Liked Songs
 
 Run: `s2yt_load_liked`
 
@@ -75,21 +157,21 @@ spot-checked my songs and it seems to be doing a good job of matching YTMusic so
 Spotify.  So far I haven't seen a single failure across a couple thousand songs, but more
 esoteric titles it may have issues with.
 
-## Import Your Liked Albums
+### Import Your Liked Albums
 
 Run: `s2yt_load_liked_albums`
 
 Spotify stores liked albums outside of the "Liked Songs" playlist.  This is the command to
 load your liked albums into YTMusic liked songs.
 
-## List Your Playlists
+### List Your Playlists
 
 Run `s2yt_list_playlists`
 
 This will list the playlists you have on both Spotify and YTMusic.  You will need to
 individually copy them.
 
-## Copy Your Playlists
+### Copy Your Playlists
 
 You can either copy **all** playlists, or do a more surgical copy of individual playlists.
 Copying all playlists will use the name of the Spotify playlist as the destination
@@ -120,7 +202,7 @@ For example:
 Re-running "copy_playlist" or "load_liked" in the event that it fails should be safe, it
 will not duplicate entries on the playlist.
 
-## Searching for YTMusic Tracks
+### Searching for YTMusic Tracks
 
 This is mostly for debugging, but there is a command to search for tracks in YTMusic:
 
