@@ -33,3 +33,6 @@ version = "0.1"
 formal_name = "Spotify2YTMusic"
 description = "A tool for helping to convert Spotify playlists to YouTube Music"
 sources = ['spotify2ytmusic']
+requires = [
+  'ytmusicapi',
+]
