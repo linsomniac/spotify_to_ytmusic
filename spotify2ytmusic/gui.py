@@ -15,11 +15,26 @@ from reverse_playlist import reverse_playlist
 
 
 def create_label(parent, text, **kwargs) -> tk.Label:
-    return tk.Label(parent, text=text, font=("Helvetica", 14), background="#26242f", foreground="white", **kwargs)
+    return tk.Label(
+        parent,
+        text=text,
+        font=("Helvetica", 14),
+        background="#26242f",
+        foreground="white",
+        **kwargs,
+    )
 
 
 def create_button(parent, text, **kwargs):
-    return tk.Button(parent, text=text, font=("Helvetica", 14), background="#696969", foreground="white", border=1, **kwargs)
+    return tk.Button(
+        parent,
+        text=text,
+        font=("Helvetica", 14),
+        background="#696969",
+        foreground="white",
+        border=1,
+        **kwargs,
+    )
 
 
 class Window:
@@ -30,11 +45,17 @@ class Window:
         self.root.config(background="#26242f")
 
         style = ttk.Style()
-        style.theme_use('default')
-        style.configure("TNotebook.Tab", background="#121212", foreground="white")  # Set the background color to #121212 when not selected
-        style.map("TNotebook.Tab", background=[("selected", "#26242f")], foreground=[("selected", "#ffffff")])  # Set the background color to #26242f and text color to white when selected
-        style.configure('TFrame', background='#26242f')
-        style.configure('TNotebook', background='#121212')
+        style.theme_use("default")
+        style.configure(
+            "TNotebook.Tab", background="#121212", foreground="white"
+        )  # Set the background color to #121212 when not selected
+        style.map(
+            "TNotebook.Tab",
+            background=[("selected", "#26242f")],
+            foreground=[("selected", "#ffffff")],
+        )  # Set the background color to #26242f and text color to white when selected
+        style.configure("TFrame", background="#26242f")
+        style.configure("TNotebook", background="#121212")
 
         # Redirect stdout to GUI
         sys.stdout.write = self.redirector
@@ -72,7 +93,7 @@ class Window:
         self.tabControl.add(self.tab5, text='Copy all playlists')
         self.tabControl.add(self.tab6, text='Copy a specific playlist')
         self.tabControl.add(self.tab7, text='Settings')
-        
+
         # Create a Frame for the logs
         self.log_frame = ttk.Frame(self.paned_window)
         self.paned_window.add(self.log_frame, weight=1)
@@ -83,11 +104,16 @@ class Window:
         self.logs.config(background="#26242f", foreground="white")
 
         # tab 0
-        create_label(self.tab0, text="Welcome to Spotify to YT Music!\nTo start, you need to login to YT Music.").pack(
-            anchor=tk.CENTER, expand=True)
-        create_button(self.tab0, text="Login", command=self.yt_login).pack(anchor=tk.CENTER, expand=True)
+        create_label(
+            self.tab0,
+            text="Welcome to Spotify to YT Music!\nTo start, you need to login to YT Music.",
+        ).pack(anchor=tk.CENTER, expand=True)
+        create_button(self.tab0, text="Login", command=self.yt_login).pack(
+            anchor=tk.CENTER, expand=True
+        )
 
         # tab1
+
         create_label(self.tab1, text="First, you need to backup your spotify playlists").pack(anchor=tk.CENTER,
                                                                                               expand=True)
         create_button(self.tab1, text="Backup", command=lambda: self.call_func(spotify_backup.main, self.tab3)).pack(
@@ -111,52 +137,82 @@ class Window:
             anchor=tk.CENTER, expand=True)
 
         # tab4
-        create_label(self.tab4, text="Here, you can get a list of your playlists, with their ID.").pack(
-            anchor=tk.CENTER, expand=True)
-        create_button(self.tab4, text="List", command=lambda: self.call_func(cli.list_playlists, self.tab5)).pack(
-            anchor=tk.CENTER, expand=True)
+        create_label(
+            self.tab4, text="Here, you can get a list of your playlists, with their ID."
+        ).pack(anchor=tk.CENTER, expand=True)
+        create_button(
+            self.tab4,
+            text="List",
+            command=lambda: self.call_func(cli.list_playlists, self.tab5),
+        ).pack(anchor=tk.CENTER, expand=True)
 
         # tab5
-        create_label(self.tab5,
-                     text="Here, you can copy all your playlists from Spotify to YT Music. Please note that this step "
-                          "can take a long time since songs are added one by one.").pack(
-            anchor=tk.CENTER, expand=True)
-        create_button(self.tab5, text="Copy", command=lambda: self.call_func(backend.copy_all_playlists, self.tab6)).pack(
-            anchor=tk.CENTER, expand=True)
+        create_label(
+            self.tab5,
+            text="Here, you can copy all your playlists from Spotify to YT Music. Please note that this step "
+            "can take a long time since songs are added one by one.",
+        ).pack(anchor=tk.CENTER, expand=True)
+        create_button(
+            self.tab5,
+            text="Copy",
+            command=lambda: self.call_func(backend.copy_all_playlists, self.tab6),
+        ).pack(anchor=tk.CENTER, expand=True)
 
         # tab6
-        create_label(self.tab6, text="Here, you can copy a specific playlist from Spotify to YT Music.").pack(
-            anchor=tk.CENTER, expand=True)
-        create_label(self.tab6, text="Spotify playlist ID:").pack(anchor=tk.CENTER, expand=True)
+        create_label(
+            self.tab6,
+            text="Here, you can copy a specific playlist from Spotify to YT Music.",
+        ).pack(anchor=tk.CENTER, expand=True)
+        create_label(self.tab6, text="Spotify playlist ID:").pack(
+            anchor=tk.CENTER, expand=True
+        )
         self.spotify_playlist_id = tk.Entry(self.tab6)
         self.spotify_playlist_id.pack(anchor=tk.CENTER, expand=True)
-        create_label(self.tab6, text="YT Music playlist ID:").pack(anchor=tk.CENTER, expand=True)
+        create_label(self.tab6, text="YT Music playlist ID:").pack(
+            anchor=tk.CENTER, expand=True
+        )
         self.yt_playlist_id = tk.Entry(self.tab6)
         self.yt_playlist_id.pack(anchor=tk.CENTER, expand=True)
-        create_button(self.tab6, text="Copy", command=self.call_copy_playlist).pack(anchor=tk.CENTER, expand=True)
-        
+        create_button(self.tab6, text="Copy", command=self.call_copy_playlist).pack(
+            anchor=tk.CENTER, expand=True
+        )
+
         # tab7
         self.var_scroll = tk.BooleanVar()
-        
-        auto_scroll = tk.Checkbutton(self.tab7, text="Auto scroll", variable=self.var_scroll, command=lambda: self.load_write_settings(1), background="#696969", foreground="#ffffff", selectcolor="#26242f", border=1)
+
+        auto_scroll = tk.Checkbutton(
+            self.tab7,
+            text="Auto scroll",
+            variable=self.var_scroll,
+            command=lambda: self.load_write_settings(1),
+            background="#696969",
+            foreground="#ffffff",
+            selectcolor="#26242f",
+            border=1,
+        )
         auto_scroll.pack(anchor=tk.CENTER, expand=True)
         auto_scroll.select()
-        
+
         self.var_algo = tk.IntVar()
         self.var_algo.set(0)
-        
+
         self.algo_label = create_label(self.tab7, text=f"Algorithm: ")
         self.algo_label.pack(anchor=tk.CENTER, expand=True)
-        
-        menu_algo = tk.OptionMenu(self.tab7, self.var_algo, 0, *[1, 2], command=lambda x: self.load_write_settings(1))
+
+        menu_algo = tk.OptionMenu(
+            self.tab7,
+            self.var_algo,
+            0,
+            *[1, 2],
+            command=lambda x: self.load_write_settings(1),
+        )
         menu_algo.pack(anchor=tk.CENTER, expand=True)
         menu_algo.config(background="#696969", foreground="#ffffff", border=1)
 
-        
     def redirector(self, input_str="") -> None:
         """
         Inserts the input string into the logs widget and disables editing.
-    
+
         Args:
             self: The instance of the class.
             input_str (str): The string to be inserted into the logs' widget.
@@ -189,14 +245,18 @@ class Window:
         yt_playlist_id = self.yt_playlist_id.get()
 
         print()
-        
+
         if spotify_playlist_id == "":
             print("Please enter the Spotify playlist ID")
             return
         if yt_playlist_id == "":
-            print("No Youtube playlist ID, creating one and naming it by the source playlist ID.")
+            print(
+                "No Youtube playlist ID, creating one and naming it by the source playlist ID."
+            )
             backend.create_playlist(spotify_playlist_id)
-        th = threading.Thread(target=backend.copy_playlist, args=(spotify_playlist_id, yt_playlist_id))
+        th = threading.Thread(
+            target=backend.copy_playlist, args=(spotify_playlist_id, yt_playlist_id)
+        )
         th.start()
         while th.is_alive():
             self.root.update()
@@ -208,7 +268,9 @@ class Window:
         result = [0]  # Shared data structure
 
         def target():
-            result[0] = reverse_playlist(replace=True)  # Call the function with specific arguments
+            result[0] = reverse_playlist(
+                replace=True
+            )  # Call the function with specific arguments
 
         th = threading.Thread(target=target)
         th.start()
@@ -231,14 +293,24 @@ class Window:
                 command = ["ytmusicapi", "oauth"]
 
                 # Open a new console window to run the command
-                if os.name == 'nt':  # If the OS is Windows
-                    process = subprocess.Popen(command, creationflags=subprocess.CREATE_NEW_CONSOLE)
+                if os.name == "nt":  # If the OS is Windows
+                    process = subprocess.Popen(
+                        command, creationflags=subprocess.CREATE_NEW_CONSOLE
+                    )
                     process.communicate()
                 else:  # For Unix and Linux
                     try:
-                        subprocess.call('x-terminal-emulator -e ytmusicapi oauth', shell=True, stdout=subprocess.PIPE)
+                        subprocess.call(
+                            "x-terminal-emulator -e ytmusicapi oauth",
+                            shell=True,
+                            stdout=subprocess.PIPE,
+                        )
                     except:
-                        subprocess.call('xterm -e ytmusicapi oauth', shell=True, stdout=subprocess.PIPE)
+                        subprocess.call(
+                            "xterm -e ytmusicapi oauth",
+                            shell=True,
+                            stdout=subprocess.PIPE,
+                        )
 
             self.tabControl.select(self.tab1)
             print()
@@ -246,10 +318,10 @@ class Window:
         # Run the function in a separate thread
         th = threading.Thread(target=run_in_thread)
         th.start()
-    
+
     def load_write_settings(self, action: int) -> None:
         texts = {0: "Exact match", 1: "Fuzzy match", 2: "Fuzzy match with videos"}
-        
+
         exist = True
         if action == 0:
             with open("settings.json", "a+") as f:
@@ -269,7 +341,7 @@ class Window:
                 settings["auto_scroll"] = self.var_scroll.get()
                 settings["algo_number"] = self.var_algo.get()
                 json.dump(settings, f)
-                
+
         self.algo_label.config(text=f"Algorithm: {texts[self.var_algo.get()]}")
         self.root.update()
 

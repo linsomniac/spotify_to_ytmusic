@@ -1,0 +1,32 @@
+name: Build with Briefcase
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install briefcase
+
+    - name: Build with Briefcase
+      run: briefcase create windows && briefcase build windows && briefcase package windows
+
+    - name: Upload installer as an artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: installer
+        path: dist/Spotify2YTMusic-*.msi

@@ -9,7 +9,9 @@ from argparse import ArgumentParser
 def reverse_playlist(input_file="playlists.json", verbose=True, replace=False) -> int:
     if os.path.exists(input_file) and not replace:
         if verbose:
-            print("Output file already exists and no replace argument detected, exiting...")
+            print(
+                "Output file already exists and no replace argument detected, exiting..."
+            )
         return 1
 
     print("Backing up file...")
@@ -46,8 +48,15 @@ def reverse_playlist(input_file="playlists.json", verbose=True, replace=False) -
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("input_file", type=str, help="Path to the input file")
-    parser.add_argument("-v", "--verbose", action="store_false", help="Enable verbose mode")
-    parser.add_argument("-r", "--replace", action="store_true", help="Replace the output file if already existing")
+    parser.add_argument(
+        "-v", "--verbose", action="store_false", help="Enable verbose mode"
+    )
+    parser.add_argument(
+        "-r",
+        "--replace",
+        action="store_true",
+        help="Replace the output file if already existing",
+    )
 
     args = parser.parse_args()
 

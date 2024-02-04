@@ -176,7 +176,6 @@ def load_liked():
     )
 
 
-# @@@@@@@@@@
 def copy_playlist():
     """
     Copy a Spotify playlist to a YTMusic playlist
