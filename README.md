@@ -1,5 +1,12 @@
 Tools for moving from Spotify to YTMusic
 
+# Code Refactoring Note
+
+We are currently refactoring the code and integrating the GUI.  There may be some bugs as
+this work is being done, if you experience problems please go back to a version previous
+to this work, for example 0.9.12.  To use pip to install a specific version, do: `pip
+install spotify2ytmusic==0.9.12`
+
 # Overview
 
 This is a set of scripts for copying "liked" songs and playlists from Spotify to YTMusic.
