@@ -84,15 +84,15 @@ class Window:
         self.tab5 = ttk.Frame(self.tabControl)
         self.tab6 = ttk.Frame(self.tabControl)
         self.tab7 = ttk.Frame(self.tabControl)
-        
-        self.tabControl.add(self.tab0, text='Login to YT Music')
-        self.tabControl.add(self.tab1, text='Spotify backup')
+
+        self.tabControl.add(self.tab0, text="Login to YT Music")
+        self.tabControl.add(self.tab1, text="Spotify backup")
         # self.tabControl.add(self.tab2, text='Reverse playlist')
-        self.tabControl.add(self.tab3, text='Load liked songs')
-        self.tabControl.add(self.tab4, text='List playlists')
-        self.tabControl.add(self.tab5, text='Copy all playlists')
-        self.tabControl.add(self.tab6, text='Copy a specific playlist')
-        self.tabControl.add(self.tab7, text='Settings')
+        self.tabControl.add(self.tab3, text="Load liked songs")
+        self.tabControl.add(self.tab4, text="List playlists")
+        self.tabControl.add(self.tab5, text="Copy all playlists")
+        self.tabControl.add(self.tab6, text="Copy a specific playlist")
+        self.tabControl.add(self.tab7, text="Settings")
 
         # Create a Frame for the logs
         self.log_frame = ttk.Frame(self.paned_window)
@@ -114,15 +114,21 @@ class Window:
 
         # tab1
 
-        create_label(self.tab1, text="First, you need to backup your spotify playlists").pack(anchor=tk.CENTER,
-                                                                                              expand=True)
-        create_button(self.tab1, text="Backup", command=lambda: self.call_func(func=spotify_backup.main, args=(), next_tab=self.tab3)).pack(
-            anchor=tk.CENTER, expand=True)
+        create_label(
+            self.tab1, text="First, you need to backup your spotify playlists"
+        ).pack(anchor=tk.CENTER, expand=True)
+        create_button(
+            self.tab1,
+            text="Backup",
+            command=lambda: self.call_func(
+                func=spotify_backup.main, args=(), next_tab=self.tab3
+            ),
+        ).pack(anchor=tk.CENTER, expand=True)
 
         # # tab2
-        
+
         # this was implemented in the backend.py file
-        
+
         # create_label(self.tab2,
         #              text="Since this program likes the last added song first, you need to reverse the playlist if "
         #                   "you want to keep the exact same playlists.\nBut this step is not mandatory, you can skip "
@@ -132,10 +138,24 @@ class Window:
         # create_button(self.tab2, text="Reverse", command=self.call_reverse).pack(anchor=tk.CENTER, expand=True)
 
         # tab3
-        create_label(self.tab3, text="Now, you can load your liked songs.").pack(anchor=tk.CENTER, expand=True)
-        create_button(self.tab3, text="Load", command=lambda x: self.call_func(
-            func=backend.copier, args=(backend.iter_spotify_playlist(), None, False, 0.1, self.var_algo.get()), next_tab=self.tab4)
-            ).pack(anchor=tk.CENTER, expand=True)
+        create_label(self.tab3, text="Now, you can load your liked songs.").pack(
+            anchor=tk.CENTER, expand=True
+        )
+        create_button(
+            self.tab3,
+            text="Load",
+            command=lambda x: self.call_func(
+                func=backend.copier,
+                args=(
+                    backend.iter_spotify_playlist(),
+                    None,
+                    False,
+                    0.1,
+                    self.var_algo.get(),
+                ),
+                next_tab=self.tab4,
+            ),
+        ).pack(anchor=tk.CENTER, expand=True)
 
         # tab4
         create_label(
@@ -144,7 +164,9 @@ class Window:
         create_button(
             self.tab4,
             text="List",
-            command=lambda: self.call_func(func=cli.list_playlists, args=(), next_tab=self.tab5),
+            command=lambda: self.call_func(
+                func=cli.list_playlists, args=(), next_tab=self.tab5
+            ),
         ).pack(anchor=tk.CENTER, expand=True)
 
         # tab5
@@ -156,7 +178,11 @@ class Window:
         create_button(
             self.tab5,
             text="Copy",
-            command=lambda: self.call_func(func=backend.copy_all_playlists, args=(0.1, False, "utf-8", self.var_algo.get()), next_tab=self.tab6),
+            command=lambda: self.call_func(
+                func=backend.copy_all_playlists,
+                args=(0.1, False, "utf-8", self.var_algo.get()),
+                next_tab=self.tab6,
+            ),
         ).pack(anchor=tk.CENTER, expand=True)
 
         # tab6
@@ -174,9 +200,15 @@ class Window:
         )
         self.yt_playlist_id = tk.Entry(self.tab6)
         self.yt_playlist_id.pack(anchor=tk.CENTER, expand=True)
-        create_button(self.tab6, text="Copy", command=lambda: self.call_func(
-            func=backend.copy_playlist, args=(self.spotify_playlist_id.get(), self.yt_playlist_id.get()), next_tab=self.tab6)
-            ).pack(anchor=tk.CENTER, expand=True)
+        create_button(
+            self.tab6,
+            text="Copy",
+            command=lambda: self.call_func(
+                func=backend.copy_playlist,
+                args=(self.spotify_playlist_id.get(), self.yt_playlist_id.get()),
+                next_tab=self.tab6,
+            ),
+        ).pack(anchor=tk.CENTER, expand=True)
 
         # tab7
         self.var_scroll = tk.BooleanVar()
@@ -305,7 +337,10 @@ class Window:
                     self.var_algo.set(settings["algo_number"])
         else:
             with open("settings.json", "w+") as f:
-                settings = {"auto_scroll": self.var_scroll.get(), "algo_number": self.var_algo.get()}
+                settings = {
+                    "auto_scroll": self.var_scroll.get(),
+                    "algo_number": self.var_algo.get(),
+                }
                 json.dump(settings, f)
 
         self.algo_label.config(text=f"Algorithm: {texts[self.var_algo.get()]}")
