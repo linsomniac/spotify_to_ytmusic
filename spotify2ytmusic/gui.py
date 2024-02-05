@@ -11,7 +11,7 @@ from tkinter import ttk
 import cli
 import backend
 import spotify_backup
-from reverse_playlist import reverse_playlist
+from typing import Callable
 
 
 def create_label(parent, text, **kwargs) -> tk.Label:
@@ -25,7 +25,7 @@ def create_label(parent, text, **kwargs) -> tk.Label:
     )
 
 
-def create_button(parent, text, **kwargs):
+def create_button(parent, text, **kwargs) -> tk.Button:
     return tk.Button(
         parent,
         text=text,
@@ -116,7 +116,7 @@ class Window:
 
         create_label(self.tab1, text="First, you need to backup your spotify playlists").pack(anchor=tk.CENTER,
                                                                                               expand=True)
-        create_button(self.tab1, text="Backup", command=lambda: self.call_func(spotify_backup.main, self.tab3)).pack(
+        create_button(self.tab1, text="Backup", command=lambda: self.call_func(func=spotify_backup.main, args=(), next_tab=self.tab3)).pack(
             anchor=tk.CENTER, expand=True)
 
         # # tab2
@@ -133,8 +133,9 @@ class Window:
 
         # tab3
         create_label(self.tab3, text="Now, you can load your liked songs.").pack(anchor=tk.CENTER, expand=True)
-        create_button(self.tab3, text="Load", command=self.call_load_liked_songs).pack(
-            anchor=tk.CENTER, expand=True)
+        create_button(self.tab3, text="Load", command=lambda x: self.call_func(
+            func=backend.copier, args=(backend.iter_spotify_playlist(), None, False, 0.1, self.var_algo.get()), next_tab=self.tab4)
+            ).pack(anchor=tk.CENTER, expand=True)
 
         # tab4
         create_label(
@@ -143,7 +144,7 @@ class Window:
         create_button(
             self.tab4,
             text="List",
-            command=lambda: self.call_func(cli.list_playlists, self.tab5),
+            command=lambda: self.call_func(func=cli.list_playlists, args=(), next_tab=self.tab5),
         ).pack(anchor=tk.CENTER, expand=True)
 
         # tab5
@@ -155,7 +156,7 @@ class Window:
         create_button(
             self.tab5,
             text="Copy",
-            command=lambda: self.call_func(backend.copy_all_playlists, self.tab6),
+            command=lambda: self.call_func(func=backend.copy_all_playlists, args=(0.1, False, "utf-8", self.var_algo.get()), next_tab=self.tab6),
         ).pack(anchor=tk.CENTER, expand=True)
 
         # tab6
@@ -173,9 +174,9 @@ class Window:
         )
         self.yt_playlist_id = tk.Entry(self.tab6)
         self.yt_playlist_id.pack(anchor=tk.CENTER, expand=True)
-        create_button(self.tab6, text="Copy", command=self.call_copy_playlist).pack(
-            anchor=tk.CENTER, expand=True
-        )
+        create_button(self.tab6, text="Copy", command=lambda: self.call_func(
+            func=backend.copy_playlist, args=(self.spotify_playlist_id.get(), self.yt_playlist_id.get()), next_tab=self.tab6)
+            ).pack(anchor=tk.CENTER, expand=True)
 
         # tab7
         self.var_scroll = tk.BooleanVar()
@@ -222,64 +223,31 @@ class Window:
         self.logs.config(state=tk.DISABLED)
         if self.var_scroll.get():
             self.logs.see(tk.END)
-            
-    def call_load_liked_songs(self):
-        th = threading.Thread(target=backend.copier, args=(backend.iter_spotify_playlist(), None, False, 0.1, self.var_algo.get()))
-        th.start()
-        while th.is_alive():
-            self.root.update()
 
-        self.tabControl.select(self.tab4)
-        print()
-
-    def call_func(self, func, next_tab):
-        th = threading.Thread(target=func)
+    def call_func(self, func: Callable, args: tuple, next_tab: ttk.Frame) -> None:
+        th = threading.Thread(target=func, args=args)
         th.start()
         while th.is_alive():
             self.root.update()
         self.tabControl.select(next_tab)
         print()
 
-    def call_copy_playlist(self):
-        spotify_playlist_id = self.spotify_playlist_id.get()
-        yt_playlist_id = self.yt_playlist_id.get()
+    # def call_reverse(self):
+    #     result = [0]  # Shared data structure
 
-        print()
+    #     def target():
+    #         result[0] = reverse_playlist(
+    #             replace=True
+    #         )  # Call the function with specific arguments
 
-        if spotify_playlist_id == "":
-            print("Please enter the Spotify playlist ID")
-            return
-        if yt_playlist_id == "":
-            print(
-                "No Youtube playlist ID, creating one and naming it by the source playlist ID."
-            )
-            backend.create_playlist(spotify_playlist_id)
-        th = threading.Thread(
-            target=backend.copy_playlist, args=(spotify_playlist_id, yt_playlist_id)
-        )
-        th.start()
-        while th.is_alive():
-            self.root.update()
+    #     th = threading.Thread(target=target)
+    #     th.start()
+    #     while th.is_alive():
+    #         self.root.update()
 
-        self.tabControl.select(self.tab6)
-        print()
-
-    def call_reverse(self):
-        result = [0]  # Shared data structure
-
-        def target():
-            result[0] = reverse_playlist(
-                replace=True
-            )  # Call the function with specific arguments
-
-        th = threading.Thread(target=target)
-        th.start()
-        while th.is_alive():
-            self.root.update()
-
-        if result[0] == 0:  # Access the return value
-            self.tabControl.select(self.tab3)
-            print()
+    #     if result[0] == 0:  # Access the return value
+    #         self.tabControl.select(self.tab3)
+    #         print()
 
     def yt_login(self, auto=False) -> None:
         def run_in_thread():
@@ -324,7 +292,7 @@ class Window:
 
         exist = True
         if action == 0:
-            with open("settings.json", "a+") as f:
+            with open("settings.json", "a+"):
                 pass
             with open("settings.json", "r+") as f:
                 value = f.read()
@@ -337,9 +305,7 @@ class Window:
                     self.var_algo.set(settings["algo_number"])
         else:
             with open("settings.json", "w+") as f:
-                settings = {}
-                settings["auto_scroll"] = self.var_scroll.get()
-                settings["algo_number"] = self.var_algo.get()
+                settings = {"auto_scroll": self.var_scroll.get(), "algo_number": self.var_algo.get()}
                 json.dump(settings, f)
 
         self.algo_label.config(text=f"Algorithm: {texts[self.var_algo.get()]}")
