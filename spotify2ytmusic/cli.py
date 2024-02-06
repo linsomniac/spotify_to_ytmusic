@@ -209,7 +209,7 @@ def copy_playlist():
             default="utf-8",
             help="The encoding of the `playlists.json` file.",
         )
-        parse_arguments(
+        parser.add_argument(
             "--algo",
             type=int,
             default=0,
@@ -251,7 +251,7 @@ def copy_all_playlists():
             default="utf-8",
             help="The encoding of the `playlists.json` file.",
         )
-        parse_arguments(
+        parser.add_argument(
             "--algo",
             type=int,
             default=0,
