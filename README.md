@@ -38,6 +38,7 @@ To run directly from source:
 ```shell
 git clone git@github.com:linsomniac/spotify_to_ytmusic.git
 cd spotify_to_ytmusic
+pip install ytmusicapi
 ```
 
 Then you can prefix the command you want to run with `python3 -m spotify2ytmusic`, for
