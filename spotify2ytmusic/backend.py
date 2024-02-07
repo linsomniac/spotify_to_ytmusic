@@ -74,7 +74,7 @@ def load_playlists_json(filename: str = "playlists.json", encoding: str = "utf-8
 
 
 def create_playlist(pl_name: str) -> None:
-    """ Create a YTMusic playlist
+    """Create a YTMusic playlist
 
 
     Args:
@@ -233,9 +233,7 @@ def lookup_song(
             #  This would need to do fuzzy matching
             for song in songs:
                 # Remove everything in brackets in the song title
-                song_title_without_brackets = re.sub(
-                    r"[\[(].*?[])]", "", song["title"]
-                )
+                song_title_without_brackets = re.sub(r"[\[(].*?[])]", "", song["title"])
                 if (
                     (
                         song_title_without_brackets == track_name
@@ -382,13 +380,13 @@ def copy_playlist(
     """
     yt = get_ytmusic()
     pl_name: str = ""
-        
+
     if ytmusic_playlist_id.startswith("+"):
         pl_name = ytmusic_playlist_id[1:]
 
         ytmusic_playlist_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={ytmusic_playlist_id}")
-        
+
     if ytmusic_playlist_id == "":
         if pl_name == "":
             print("No playlist name or ID provided, creating playlist...")
@@ -396,7 +394,7 @@ def copy_playlist(
             for pl in spotify_pls["playlists"]:
                 if len(pl.keys()) > 3 and pl["id"] == spotify_playlist_id:
                     pl_name = pl["name"]
-    
+
         ytmusic_playlist_id = _ytmusic_create_playlist(
             yt, title=pl_name, description=pl_name
         )
