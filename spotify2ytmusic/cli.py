@@ -266,3 +266,12 @@ def copy_all_playlists():
         dry_run=args.dry_run,
         spotify_playlists_encoding=args.spotify_playlists_encoding,
     )
+
+
+def gui():
+    """
+    Run the Spotify2YTMusic GUI.
+    """
+    from . import gui
+
+    gui.main()

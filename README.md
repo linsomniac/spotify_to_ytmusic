@@ -44,6 +44,7 @@ Then you can prefix the command you want to run with `python3 -m spotify2ytmusic
 example:
 
 ```shell
+python3 -m spotify2ytmusic gui
 python3 -m spotify2ytmusic list_playlists
 python3 -m spotify2ytmusic load_liked
 [etc...]
@@ -51,9 +52,13 @@ python3 -m spotify2ytmusic load_liked
 
 ## Graphical UI
 
-On Windows: `python gui.py`
+If you have installed via PIP, you should be able to run: `s2yt_gui`
 
-Or on Linux: `python3 gui.py`
+Otherwise, if running from source:
+
+On Windows: `python -m spotify2ytmusic gui`
+
+Or on Linux: `python2 -m spotify2ytmusic gui`
 
 ### Login to YTMusic - Tab 0
 

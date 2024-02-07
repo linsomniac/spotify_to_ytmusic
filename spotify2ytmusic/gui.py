@@ -8,9 +8,9 @@ import json
 import tkinter as tk
 from tkinter import ttk
 
-import cli
-import backend
-import spotify_backup
+from . import cli
+from . import backend
+from . import spotify_backup
 from typing import Callable
 
 
@@ -358,6 +358,10 @@ class Window:
         self.root.update()
 
 
-if __name__ == "__main__":
+def main() -> None:
     ui = Window()
     ui.root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
