@@ -4,7 +4,7 @@ import sys
 import os
 from argparse import ArgumentParser
 
-from . import backend
+import backend
 
 
 def list_liked_albums():
