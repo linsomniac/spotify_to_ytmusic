@@ -154,7 +154,7 @@ class Window:
         create_button(
             self.tab3,
             text="Load",
-            command=lambda x: self.call_func(
+            command=lambda: self.call_func(
                 func=backend.copier,
                 args=(
                     backend.iter_spotify_playlist(),
