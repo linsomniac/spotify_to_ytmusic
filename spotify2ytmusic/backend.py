@@ -160,7 +160,27 @@ def get_playlist_id_by_name(yt: YTMusic, title: str) -> Optional[str]:
     Returns:
         Optional[str]: The playlist ID or None if not found.
     """
-    for pl in yt.get_library_playlists(limit=5000):
+    #  ytmusicapi seems to run into some situations where it gives a Traceback on listing playlists
+    #  https://github.com/sigma67/ytmusicapi/issues/539
+    try:
+        playlists = yt.get_library_playlists(limit=5000)
+    except KeyError as e:
+        print("=" * 60)
+        print(f"Attempting to look up playlist '{title}' failed with KeyError: {e}")
+        print(
+            "This is a bug in ytmusicapi that prevents 'copy_all_playlists' from working."
+        )
+        print(
+            "You will need to manually copy playlists using s2yt_list_playlists and s2yt_copy_playlist"
+        )
+        print(
+            "until this bug gets resolved.  Try `pip install --upgrade ytmusicapi` just to verify"
+        )
+        print("you have the latest version of that library.")
+        print("=" * 60)
+        raise
+
+    for pl in playlists:
         if pl["title"] == title:
             return pl["playlistId"]
 
