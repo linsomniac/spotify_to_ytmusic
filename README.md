@@ -15,6 +15,22 @@ It provides both CLI tools and a GUI (implemented by Yoween, formerly called
 
 # Getting Started
 
+## Install Python (you may already have it)
+
+You will need a somewhat recent version of Python  3.10 and above are known to work,
+3.8-3.10 might work.
+
+### For Windows
+
+Download Python for Windows from: https://www.python.org/downloads/windows/
+
+You can also use choco to install it: `choco install python`
+
+### For Linux
+
+You probably already have it installed.  See your package manager of choice to
+install it.
+
 ## Install spotify2ytmusic (via pip)
 
 This package is available on pip, so you can install it using:
