@@ -378,6 +378,7 @@ def copy_playlist(
     Copy a Spotify playlist to a YTMusic playlist
     @@@
     """
+    print("Using search algo n°2: ", yt_search_algo)
     yt = get_ytmusic()
     pl_name: str = ""
 
