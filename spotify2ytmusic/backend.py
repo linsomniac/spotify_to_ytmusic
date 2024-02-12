@@ -105,6 +105,7 @@ def iter_spotify_playlist(
     src_pl_id: Optional[str] = None,
     spotify_playlist_file: str = "playlists.json",
     spotify_encoding: str = "utf-8",
+    reverse_playlist: bool = True,
 ) -> Iterator[SongInfo]:
     """Songs from a specific album ("Liked Songs" if None)
 
@@ -112,6 +113,7 @@ def iter_spotify_playlist(
         `src_pl_id` (Optional[str], optional): The ID of the source playlist. Defaults to None.
         `spotify_playlist_file` (str, optional): The path to the playlists backup files. Defaults to "playlists.json".
         `spotify_encoding` (str, optional): Characters encoding. Defaults to "utf-8".
+        `reverse_playlist` (bool, optional): Is the playlist reversed when loading?  Defaults to True.
 
     Yields:
         Iterator[SongInfo]: The song's information
@@ -130,7 +132,11 @@ def iter_spotify_playlist(
 
         print(f"== Spotify Playlist: {src_pl_name}")
 
-        for src_track in reversed(src_pl["tracks"]):
+        pl_tracks = src_pl["tracks"]
+        if reverse_playlist:
+            pl_tracks = reversed(pl_tracks)
+
+        for src_track in pl_tracks:
             if src_track["track"] is None:
                 print(
                     f"WARNING: Spotify track seems to be malformed, Skipping.  Track: {src_track!r}"
@@ -393,6 +399,7 @@ def copy_playlist(
     dry_run: bool = False,
     track_sleep: float = 0.1,
     yt_search_algo: int = 0,
+    reverse_playlist: bool = True,
 ):
     """
     Copy a Spotify playlist to a YTMusic playlist
@@ -428,7 +435,9 @@ def copy_playlist(
 
     copier(
         iter_spotify_playlist(
-            spotify_playlist_id, spotify_encoding=spotify_playlists_encoding
+            spotify_playlist_id,
+            spotify_encoding=spotify_playlists_encoding,
+            reverse_playlist=reverse_playlist,
         ),
         ytmusic_playlist_id,
         dry_run,
@@ -443,6 +452,7 @@ def copy_all_playlists(
     dry_run: bool = False,
     spotify_playlists_encoding: str = "utf-8",
     yt_search_algo: int = 0,
+    reverse_playlist: bool = True,
 ):
     """
     Copy all Spotify playlists (except Liked Songs) to YTMusic playlists
@@ -472,7 +482,9 @@ def copy_all_playlists(
 
         copier(
             iter_spotify_playlist(
-                src_pl["id"], spotify_encoding=spotify_playlists_encoding
+                src_pl["id"],
+                spotify_encoding=spotify_playlists_encoding,
+                reverse_playlist=reverse_playlist,
             ),
             dst_pl_id,
             dry_run,

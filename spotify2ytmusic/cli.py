@@ -177,6 +177,12 @@ def load_liked():
             default=0,
             help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
         )
+        parser.add_argument(
+            "--reverse-playlist",
+            action="store_true",
+            help="Reverse playlist on load, normally this is not set for liked songs as "
+            "they are added in the opposite order from other commands in this program.",
+        )
 
         return parser.parse_args()
 
@@ -184,7 +190,9 @@ def load_liked():
 
     backend.copier(
         backend.iter_spotify_playlist(
-            None, spotify_encoding=args.spotify_playlists_encoding
+            None,
+            spotify_encoding=args.spotify_playlists_encoding,
+            reverse_playlist=args.reverse_playlist,
         ),
         None,
         args.dry_run,
@@ -232,6 +240,12 @@ def copy_playlist():
             default=0,
             help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
         )
+        parser.add_argument(
+            "--no-reverse-playlist",
+            action="store_true",
+            help="Do not reverse playlist on load, regular playlists are reversed normally "
+            "so they end up in the same order as on Spotify.",
+        )
 
         return parser.parse_args()
 
@@ -242,6 +256,7 @@ def copy_playlist():
         track_sleep=args.track_sleep,
         dry_run=args.dry_run,
         spotify_playlists_encoding=args.spotify_playlists_encoding,
+        reverse_playlist=not args.no_reverse_playlist,
     )
 
 
@@ -274,6 +289,12 @@ def copy_all_playlists():
             default=0,
             help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
         )
+        parser.add_argument(
+            "--no-reverse-playlist",
+            action="store_true",
+            help="Do not reverse playlist on load, regular playlists are reversed normally "
+            "so they end up in the same order as on Spotify.",
+        )
 
         return parser.parse_args()
 
@@ -282,6 +303,7 @@ def copy_all_playlists():
         track_sleep=args.track_sleep,
         dry_run=args.dry_run,
         spotify_playlists_encoding=args.spotify_playlists_encoding,
+        reverse_playlist=not args.no_reverse_playlist,
     )
 
 
