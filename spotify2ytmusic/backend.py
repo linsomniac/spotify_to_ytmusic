@@ -123,6 +123,7 @@ def iter_spotify_playlist(
         if src_pl_id is None:
             if str(src_pl.get("name")) != "Liked Songs":
                 src_pl_tracks = src_pl["tracks"]
+                continue
         else:
             if str(src_pl.get("id")) != src_pl_id:
                 continue
