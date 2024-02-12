@@ -119,9 +119,10 @@ def iter_spotify_playlist(
     spotify_pls = load_playlists_json(spotify_playlist_file, spotify_encoding)
 
     for src_pl in spotify_pls["playlists"]:
+        src_pl_tracks = reversed(src_pl["tracks"])
         if src_pl_id is None:
             if str(src_pl.get("name")) != "Liked Songs":
-                continue
+                src_pl_tracks = src_pl["tracks"]
         else:
             if str(src_pl.get("id")) != src_pl_id:
                 continue
@@ -130,7 +131,7 @@ def iter_spotify_playlist(
 
         print(f"== Spotify Playlist: {src_pl_name}")
 
-        for src_track in reversed(src_pl["tracks"]):
+        for src_track in src_pl_tracks:
             if src_track["track"] is None:
                 print(
                     f"WARNING: Spotify track seems to be malformed, Skipping.  Track: {src_track!r}"
@@ -378,7 +379,7 @@ def copy_playlist(
     Copy a Spotify playlist to a YTMusic playlist
     @@@
     """
-    print("Using search algo n°2: ", yt_search_algo)
+    print("Using search algo n°", yt_search_algo)
     yt = get_ytmusic()
     pl_name: str = ""
 
