@@ -26,6 +26,15 @@ Download Python for Windows from: https://www.python.org/downloads/windows/
 
 You can also use choco to install it: `choco install python`
 
+### For MacOS
+
+Run:
+
+```
+brew install python
+brew install python-tk
+```
+
 ### For Linux
 
 You probably already have it installed.  See your package manager of choice to
