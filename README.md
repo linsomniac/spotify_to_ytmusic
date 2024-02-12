@@ -289,7 +289,7 @@ ValueError.
 
 Creative Commons Zero v1.0 Universal
 
-spotify-backup.py licensed under MIT License
-See https://github.com/caseychu/spotify-backup for more information
+spotify-backup.py licensed under MIT License.
+See https://github.com/caseychu/spotify-backup for more information.
 
 [//]: # ( vim: set tw=90 ts=4 sw=4 ai: )
