@@ -6,23 +6,6 @@ from argparse import ArgumentParser
 
 from . import backend
 
-import ytmusicapi.navigation as navigation
-
-original_nav = navigation.nav
-
-
-def debug_nav_wrapper(*args, **kwargs):
-    try:
-        return original_nav(*args, **kwargs)
-    except KeyError as e:
-        print(
-            f"NAV was called with args={args!r}  kwargs={kwargs!r}, raised exception: {e}"
-        )
-        raise
-
-
-navigation.nav = debug_nav_wrapper
-
 
 def list_liked_albums():
     """
