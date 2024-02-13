@@ -215,7 +215,14 @@ class Window:
             text="Copy",
             command=lambda: self.call_func(
                 func=backend.copy_playlist,
-                args=(self.spotify_playlist_id.get(), self.yt_playlist_id.get()),
+                args=(
+                    self.spotify_playlist_id.get(),
+                    self.yt_playlist_id.get(),
+                    "utf-8",
+                    False,
+                    0.1,
+                    self.var_algo.get(),
+                ),
                 next_tab=self.tab6,
             ),
         ).pack(anchor=tk.CENTER, expand=True)
@@ -261,7 +268,7 @@ class Window:
             input_str (str): The string to be inserted into the logs' widget.
         """
         self.logs.config(state=tk.NORMAL)
-        self.logs.insert(tk.INSERT, input_str)
+        self.logs.insert(tk.END, input_str)
         self.logs.config(state=tk.DISABLED)
         if self.var_scroll.get():
             self.logs.see(tk.END)

@@ -7,7 +7,7 @@ import time
 import re
 
 from ytmusicapi import YTMusic
-from typing import Optional, Union, Iterator
+from typing import Optional, Union, Iterator, Dict
 from collections import namedtuple
 
 
@@ -120,40 +120,45 @@ def iter_spotify_playlist(
     """
     spotify_pls = load_playlists_json(spotify_playlist_file, spotify_encoding)
 
-    for src_pl in spotify_pls["playlists"]:
-        if src_pl_id is None:
-            if str(src_pl.get("name")) != "Liked Songs":
-                continue
-        else:
-            if str(src_pl.get("id")) != src_pl_id:
-                continue
+    def find_spotify_playlist(spotify_pls: Dict, src_pl_id: Union[str, None]) -> Dict:
+        """Return the spotify playlist that matches the `src_pl_id`.
 
-        src_pl_name = src_pl["name"]
+        Args:
+            `spotify_pls`: The playlist datastrcuture saved by spotify-backup.
+            `src_pl_id`: The ID of a playlist to find, or None for the "Liked Songs" playlist.
+        """
+        for src_pl in spotify_pls["playlists"]:
+            if src_pl_id is None and str(src_pl.get("name")) == "Liked Songs":
+                return src_pl
+            if src_pl_id is not None and str(src_pl.get("id")) == src_pl_id:
+                return src_pl
+        raise ValueError(f"Could not find Spotify playlist {src_pl_id}")
 
-        print(f"== Spotify Playlist: {src_pl_name}")
+    src_pl = find_spotify_playlist(spotify_pls, src_pl_id)
+    src_pl_name = src_pl["name"]
 
-        pl_tracks = src_pl["tracks"]
-        if reverse_playlist:
-            pl_tracks = reversed(pl_tracks)
+    print(f"== Spotify Playlist: {src_pl_name}")
 
-        for src_track in pl_tracks:
-            if src_track["track"] is None:
-                print(
-                    f"WARNING: Spotify track seems to be malformed, Skipping.  Track: {src_track!r}"
-                )
-                continue
+    pl_tracks = src_pl["tracks"]
+    if reverse_playlist:
+        pl_tracks = reversed(pl_tracks)
 
-            try:
-                src_album_name = src_track["track"]["album"]["name"]
-                src_track_artist = src_track["track"]["artists"][0]["name"]
-            except TypeError as e:
-                print(
-                    f"ERROR: Spotify track seems to be malformed.  Track: {src_track!r}"
-                )
-                raise e
-            src_track_name = src_track["track"]["name"]
+    for src_track in pl_tracks:
+        if src_track["track"] is None:
+            print(
+                f"WARNING: Spotify track seems to be malformed, Skipping.  Track: {src_track!r}"
+            )
+            continue
 
-            yield SongInfo(src_track_name, src_track_artist, src_album_name)
+        try:
+            src_album_name = src_track["track"]["album"]["name"]
+            src_track_artist = src_track["track"]["artists"][0]["name"]
+        except TypeError as e:
+            print(f"ERROR: Spotify track seems to be malformed.  Track: {src_track!r}")
+            raise e
+        src_track_name = src_track["track"]["name"]
+
+        yield SongInfo(src_track_name, src_track_artist, src_album_name)
 
 
 def get_playlist_id_by_name(yt: YTMusic, title: str) -> Optional[str]:
@@ -405,6 +410,7 @@ def copy_playlist(
     Copy a Spotify playlist to a YTMusic playlist
     @@@
     """
+    print("Using search algo n°: ", yt_search_algo)
     yt = get_ytmusic()
     pl_name: str = ""
 
