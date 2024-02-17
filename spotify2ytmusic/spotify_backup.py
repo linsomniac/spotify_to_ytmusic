@@ -26,6 +26,8 @@ class SpotifyAPI:
                 res = urllib.request.urlopen(req)
                 reader = codecs.getreader("utf-8")
                 return json.load(reader(res))
+            except UnicodeDecodeError:
+                raise
             except Exception as err:
                 print("Couldn't load URL: {} ({})".format(url, err))
                 time.sleep(2)
