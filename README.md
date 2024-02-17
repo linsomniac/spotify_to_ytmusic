@@ -85,7 +85,7 @@ Otherwise, if running from source:
 
 On Windows: `python -m spotify2ytmusic gui`
 
-Or on Linux: `python2 -m spotify2ytmusic gui`
+Or on Linux: `python3 -m spotify2ytmusic gui`
 
 ### Login to YTMusic - Tab 0
 
