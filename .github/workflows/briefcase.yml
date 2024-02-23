@@ -27,16 +27,16 @@ jobs:
     - name: Build with Briefcase
       run: briefcase create windows && briefcase build windows && briefcase package windows
 
-    - name: Upload installer as an artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Spotify2YTMusic-Windows-Installer
-        path: dist/Spotify2YTMusic-*.msi
-
-    - name: Download Artifact
-      uses: actions/download-artifact@v2
-      with:
-        name: Spotify2YTMusic-Windows-Installer
+    #    - name: Upload installer as an artifact
+    #      uses: actions/upload-artifact@v4
+    #      with:
+    #        name: Spotify2YTMusic-Windows-Installer
+    #        path: dist/Spotify2YTMusic-*.msi
+    #
+    #    - name: Download Artifact
+    #      uses: actions/download-artifact@v2
+    #      with:
+    #        name: Spotify2YTMusic-Windows-Installer
 
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
