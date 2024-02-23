@@ -1,12 +1,14 @@
 name: Build with Briefcase
 
 on:
+  release:
+    types: [released]
   push:
     branches:
       - main
 
 jobs:
-  build:
+  build-and-upload:
     runs-on: windows-latest
 
     steps:
@@ -28,5 +30,14 @@ jobs:
     - name: Upload installer as an artifact
       uses: actions/upload-artifact@v4
       with:
-        name: installer
+        name: Spotify2YTMusic-Windows-Installer
         path: dist/Spotify2YTMusic-*.msi
+
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      #if: startsWith(github.ref, 'refs/tags/')
+      if: github.event_name == 'release' && github.event.action == 'released'
+      with:
+        files: dist/Spotify2YTMusic-*.msi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
