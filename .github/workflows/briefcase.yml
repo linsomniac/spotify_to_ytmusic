@@ -24,6 +24,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install briefcase
 
+    - name: Update Application Version
+      if: github.event_name == 'release' && github.event.action == 'released'
+      run: |
+        (Get-Content pyproject.toml) -replace 'version = ".*"', 'version = "${{ github.ref_name }}"' | Set-Content pyproject.toml
+      shell: pwsh
+
     - name: Build with Briefcase
       run: briefcase create windows && briefcase build windows && briefcase package windows
 
@@ -45,9 +51,8 @@ jobs:
 
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
-      #if: startsWith(github.ref, 'refs/tags/')
       if: github.event_name == 'release' && github.event.action == 'released'
       with:
-        files: dist/Spotify2YTMusic-*.msi
+        files: dist/*.msi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
