@@ -16,6 +16,9 @@ on:
   release:
     types: [released]
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     environment:
@@ -45,3 +48,10 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        if: github.event_name == 'release' && github.event.action == 'released'
+        with:
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
