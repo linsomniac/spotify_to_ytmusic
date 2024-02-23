@@ -284,6 +284,18 @@ ValueError.
 
 ## FAQ
 
+- I get "No matching distribution found for spotify2ytmusic".
+
+  This has been reported in [Issue #39](https://github.com/linsomniac/spotify_to_ytmusic/issues/39#issuecomment-1954432174)
+  and it seems like a mismatch between python versions.  Users there, on MacOS, needed
+  to install a specific version of Python, and then use the matching version of PIP:
+
+  ```
+  brew install python@3.10
+  brew install python-tk@3.10
+  pip3.10 install spotify2ytmusic
+  ```
+
 - How does the lookup algorithm work?
 
   Given the Spotify track information, it does a lookup for the album by the same artist
