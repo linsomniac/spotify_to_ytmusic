@@ -24,6 +24,7 @@ s2yt_create_playlist = "spotify2ytmusic.cli:create_playlist"
 s2yt_list_playlists = "spotify2ytmusic.cli:list_playlists"
 s2yt_search = "spotify2ytmusic.cli:search"
 s2yt_list_liked_albums = "spotify2ytmusic.cli:list_liked_albums"
+s2yt_ytoauth = "spotify2ytmusic.cli:ytoauth"
 
 [tool.briefcase]
 project_name = "Spotify2YTMusic"

@@ -297,3 +297,13 @@ def gui():
     from . import gui
 
     gui.main()
+
+
+def ytoauth():
+    """
+    Run the "ytmusicapi oauth" login.
+    """
+    from ytmusicapi.setup import main
+
+    sys.argv = ["ytmusicapi", "oauth"]
+    sys.exit(main())

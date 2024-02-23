@@ -93,7 +93,11 @@ Or on Linux: `python3 -m spotify2ytmusic gui`
 
 OR
 
-Enter `ytmusicapi oauth` in a console.
+Run `ytmusicapi oauth` in a console.
+
+OR
+
+Run `s2yt_ytoauth`
 
 This will give you a URL, visit that URL and authorize the application.  When you are
 done with the import you can remove the authorization for this app.
@@ -164,7 +168,7 @@ will not duplicate entries on the playlist.
 
 ### Login to YTMusic
 
-`ytmusicapi oauth`
+`ytmusicapi oauth` or `s2yt_ytoauth`
 
 This will give you a URL, visit that URL and authorize the application.  When you are
 done with the import you can remove the authorization for this app.
