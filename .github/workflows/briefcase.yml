@@ -38,6 +38,11 @@ jobs:
     #      with:
     #        name: Spotify2YTMusic-Windows-Installer
 
+    - name: Show files
+      run: |
+        ls
+        ls dist
+
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       #if: startsWith(github.ref, 'refs/tags/')
