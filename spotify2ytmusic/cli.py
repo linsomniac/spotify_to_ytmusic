@@ -40,12 +40,25 @@ def create_playlist():
     """
     Create a YTMusic playlist
     """
-    if len(sys.argv) != 2:
-        print(f"usage: {os.path.basename(sys.argv[0])} <YT PLAYLIST NAME>")
-        sys.exit(1)
 
-    pl_name = sys.argv[1]
-    backend.create_playlist(pl_name)
+    def parse_arguments():
+        parser = ArgumentParser()
+        parser.add_argument(
+            "--privacy",
+            default="PRIVATE",
+            help="The privacy seting of created playlists (PRIVATE, PUBLIC, UNLISTED, default PRIVATE)",
+        )
+        parser.add_argument(
+            "playlist_name",
+            type=str,
+            help="Name of playlist to create.",
+        )
+
+        return parser.parse_args()
+
+    args = parse_arguments()
+
+    backend.create_playlist(args.playlist_name, privacy_status=args.privacy)
 
 
 def search():
@@ -229,6 +242,11 @@ def copy_playlist():
             help="Do not reverse playlist on load, regular playlists are reversed normally "
             "so they end up in the same order as on Spotify.",
         )
+        parser.add_argument(
+            "--privacy",
+            default="PRIVATE",
+            help="The privacy seting of created playlists (PRIVATE, PUBLIC, UNLISTED, default PRIVATE)",
+        )
 
         return parser.parse_args()
 
@@ -240,6 +258,7 @@ def copy_playlist():
         dry_run=args.dry_run,
         spotify_playlists_encoding=args.spotify_playlists_encoding,
         reverse_playlist=not args.no_reverse_playlist,
+        privacy_status=args.privacy,
     )
 
 
@@ -278,6 +297,11 @@ def copy_all_playlists():
             help="Do not reverse playlist on load, regular playlists are reversed normally "
             "so they end up in the same order as on Spotify.",
         )
+        parser.add_argument(
+            "--privacy",
+            default="PRIVATE",
+            help="The privacy seting of created playlists (PRIVATE, PUBLIC, UNLISTED, default PRIVATE)",
+        )
 
         return parser.parse_args()
 
@@ -287,6 +311,7 @@ def copy_all_playlists():
         dry_run=args.dry_run,
         spotify_playlists_encoding=args.spotify_playlists_encoding,
         reverse_playlist=not args.no_reverse_playlist,
+        privacy_status=args.privacy,
     )
 
 

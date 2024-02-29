@@ -32,19 +32,27 @@ def get_ytmusic() -> YTMusic:
         sys.exit(1)
 
 
-def _ytmusic_create_playlist(yt: YTMusic, title: str, description: str) -> str:
+def _ytmusic_create_playlist(
+    yt: YTMusic, title: str, description: str, privacy_status: str = "PRIVATE"
+) -> str:
     """Wrapper on ytmusic.create_playlist
 
     This wrapper does retries with back-off because sometimes YouTube Music will
     rate limit requests or otherwise fail.
+
+    privacy_status can be: PRIVATE, PUBLIC, or UNLISTED
     """
 
-    def _create(yt: YTMusic, title: str, description: str) -> Union[str, dict]:
+    def _create(
+        yt: YTMusic, title: str, description: str, privacy_status: str
+    ) -> Union[str, dict]:
         exception_sleep = 5
         for _ in range(10):
             try:
                 """Create a playlist on YTMusic, retrying if it fails."""
-                id = yt.create_playlist(title=title, description=description)
+                id = yt.create_playlist(
+                    title=title, description=description, privacy_status=privacy_status
+                )
                 return id
             except Exception as e:
                 print(
@@ -57,7 +65,7 @@ def _ytmusic_create_playlist(yt: YTMusic, title: str, description: str) -> str:
             "s2yt error": 'ERROR: Could not create playlist "{title}" after multiple retries'
         }
 
-    id = _create(yt, title, description)
+    id = _create(yt, title, description, privacy_status)
     #  create_playlist returns a dict if there was an error
     if isinstance(id, dict):
         print(f"ERROR: Failed to create playlist (name: {title}): {id}")
@@ -73,16 +81,20 @@ def load_playlists_json(filename: str = "playlists.json", encoding: str = "utf-8
     return json.load(open(filename, "r", encoding=encoding))
 
 
-def create_playlist(pl_name: str) -> None:
+def create_playlist(pl_name: str, privacy_status: str = "PRIVATE") -> None:
     """Create a YTMusic playlist
 
 
     Args:
         `pl_name` (str): The name of the playlist to create. It should be different to "".
+
+        `privacy_status` (str: PRIVATE, PUBLIC, UNLISTED) The privacy setting of created playlist.
     """
     yt = get_ytmusic()
 
-    id = _ytmusic_create_playlist(yt, title=pl_name, description=pl_name)
+    id = _ytmusic_create_playlist(
+        yt, title=pl_name, description=pl_name, privacy_status=privacy_status
+    )
     print(f"Playlist ID: {id}")
 
 
@@ -405,6 +417,7 @@ def copy_playlist(
     track_sleep: float = 0.1,
     yt_search_algo: int = 0,
     reverse_playlist: bool = True,
+    privacy_status: str = "PRIVATE",
 ):
     """
     Copy a Spotify playlist to a YTMusic playlist
@@ -429,9 +442,11 @@ def copy_playlist(
                     pl_name = pl["name"]
 
         ytmusic_playlist_id = _ytmusic_create_playlist(
-            yt, title=pl_name, description=pl_name
+            yt,
+            title=pl_name,
+            description=pl_name,
+            privacy_status=privacy_status,
         )
-        time.sleep(1)  # seems to be needed to avoid missing playlist ID error
 
         #  create_playlist returns a dict if there was an error
         if isinstance(ytmusic_playlist_id, dict):
@@ -459,6 +474,7 @@ def copy_all_playlists(
     spotify_playlists_encoding: str = "utf-8",
     yt_search_algo: int = 0,
     reverse_playlist: bool = True,
+    privacy_status: str = "PRIVATE",
 ):
     """
     Copy all Spotify playlists (except Liked Songs) to YTMusic playlists
@@ -477,8 +493,9 @@ def copy_all_playlists(
         dst_pl_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={dst_pl_id}")
         if dst_pl_id is None:
-            dst_pl_id = _ytmusic_create_playlist(yt, title=pl_name, description=pl_name)
-            time.sleep(1)  # seems to be needed to avoid missing playlist ID error
+            dst_pl_id = _ytmusic_create_playlist(
+                yt, title=pl_name, description=pl_name, privacy_status=privacy_status
+            )
 
             #  create_playlist returns a dict if there was an error
             if isinstance(dst_pl_id, dict):
