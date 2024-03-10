@@ -43,3 +43,6 @@ jobs:
         files: dist/*.msi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#  If I try pyinstaller I need to use "--collect-all ytmusicapi"
+#  https://ytmusicapi.readthedocs.io/en/stable/faq.html#how-do-i-package-ytmusicapi-with-pyinstaller
