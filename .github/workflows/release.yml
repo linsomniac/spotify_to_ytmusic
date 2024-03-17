@@ -54,7 +54,7 @@ jobs:
           password: ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Upload Release Asset
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: dist/*
         env:

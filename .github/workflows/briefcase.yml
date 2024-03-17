@@ -37,7 +37,7 @@ jobs:
       run: briefcase create windows && briefcase build windows && briefcase package windows
 
     - name: Upload Release Asset
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       if: github.event_name == 'release' && github.event.action == 'released'
       with:
         files: dist/*.msi
