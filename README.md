@@ -131,6 +131,9 @@ feature I don't like, so I created a script to reverse them. It seems to be reli
 but if you find anything weird, please open an issue. It creates a backup of the
 original file just in case anyway.
 
+
+Example: `python3 .\reverse_playlist.py ./playlists.json -r`
+
 ### Import Your Liked Songs - Tab 3
 #### Click the `import` button, and wait until it finished and switched to the next tab.
 
