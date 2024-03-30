@@ -285,6 +285,10 @@ ValueError.
 
 ## FAQ
 
+- Does this run on mobile?
+
+No, this runs on Linux/Windows/MacOS.
+
 - I get "No matching distribution found for spotify2ytmusic".
 
   This has been reported in [Issue #39](https://github.com/linsomniac/spotify_to_ytmusic/issues/39#issuecomment-1954432174)
