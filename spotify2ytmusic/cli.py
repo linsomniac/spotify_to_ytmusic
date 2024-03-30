@@ -2,6 +2,7 @@
 
 import sys
 from argparse import ArgumentParser
+import pprint
 
 from . import backend
 
@@ -91,8 +92,20 @@ def search():
     args = parse_arguments()
 
     yt = backend.get_ytmusic()
-    ret = backend.lookup_song(yt, args.track_name, args.artist, args.album, args.algo)
-    print(ret)
+    details = backend.ResearchDetails()
+    ret = backend.lookup_song(
+        yt, args.track_name, args.artist, args.album, args.algo, details=details
+    )
+
+    print(f"Query: '{details.query}'")
+    print("Selected song:")
+    pprint.pprint(ret)
+    print()
+    print(f"Search Suggestions: '{details.suggestions}'")
+    if details.songs:
+        print("Top 5 songs returned from search:")
+        for song in details.songs[:5]:
+            pprint.pprint(song)
 
 
 def load_liked_albums():

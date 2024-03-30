@@ -7,8 +7,9 @@ import time
 import re
 
 from ytmusicapi import YTMusic
-from typing import Optional, Union, Iterator, Dict
+from typing import Optional, Union, Iterator, Dict, List
 from collections import namedtuple
+from dataclasses import dataclass, field
 
 
 SongInfo = namedtuple("SongInfo", ["title", "artist", "album"])
@@ -210,8 +211,20 @@ def get_playlist_id_by_name(yt: YTMusic, title: str) -> Optional[str]:
     return None
 
 
+@dataclass
+class ResearchDetails:
+    query: Optional[str] = field(default=None)
+    songs: Optional[List[Dict]] = field(default=None)
+    suggestions: Optional[List[str]] = field(default=None)
+
+
 def lookup_song(
-    yt: YTMusic, track_name: str, artist_name: str, album_name, yt_search_algo: int
+    yt: YTMusic,
+    track_name: str,
+    artist_name: str,
+    album_name,
+    yt_search_algo: int,
+    details: Optional[ResearchDetails] = None,
 ) -> dict:
     """Look up a song on YTMusic
 
@@ -232,6 +245,7 @@ def lookup_song(
         `artist_name` (str): The name of the researched track's artist
         `album_name` (str): The name of the researched track's album
         `yt_search_algo` (int): 0 for exact matching, 1 for extended matching (search past 1st result), 2 for approximate matching (search in videos)
+        `details` (ResearchDetails): If specified, more information about the search and the response will be populated for use by the caller.
 
     Raises:
         ValueError: If no track is found, it returns an error
@@ -252,10 +266,16 @@ def lookup_song(
         except Exception as e:
             print(f"Unable to lookup album ({e}), continuing...")
 
-    songs = yt.search(query=f"{track_name} by {artist_name}", filter="songs")
+    query = f"{track_name} by {artist_name}"
+    if details:
+        details.query = query
+        details.suggestions = yt.get_search_suggestions(query=query)
+    songs = yt.search(query=query, filter="songs")
 
     match yt_search_algo:
         case 0:
+            if details:
+                details.songs = songs
             return songs[0]
 
         case 1:
