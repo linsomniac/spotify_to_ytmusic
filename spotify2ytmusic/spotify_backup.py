@@ -145,7 +145,7 @@ def main(dump="playlists,liked", format="json", file="playlists.json", token="")
     print("Loading user info...")
     me = spotify.get("me")
     print("Logged in as {display_name} ({id})".format(**me))
-
+    user_id_escaped = urllib.parse.quote(me["id"])
     playlists = []
     liked_albums = []
 
@@ -153,7 +153,7 @@ def main(dump="playlists,liked", format="json", file="playlists.json", token="")
     if "liked" in dump:
         print("Loading liked albums and songs...")
         liked_tracks = spotify.list(
-            "users/{user_id}/tracks".format(user_id=me["id"]), {"limit": 50}
+            "users/{user_id}/tracks".format(user_id=user_id_escaped), {"limit": 50}
         )
         liked_albums = spotify.list("me/albums", {"limit": 50})
         playlists += [{"name": "Liked Songs", "tracks": liked_tracks}]
@@ -162,7 +162,7 @@ def main(dump="playlists,liked", format="json", file="playlists.json", token="")
     if "playlists" in dump:
         print("Loading playlists...")
         playlist_data = spotify.list(
-            "users/{user_id}/playlists".format(user_id=me["id"]), {"limit": 50}
+            "users/{user_id}/playlists".format(user_id=user_id_escaped), {"limit": 50}
         )
         print(f"Found {len(playlist_data)} playlists")
 
