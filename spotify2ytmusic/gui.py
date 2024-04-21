@@ -306,10 +306,16 @@ class Window:
 
                 # Open a new console window to run the command
                 if os.name == "nt":  # If the OS is Windows
-                    process = subprocess.Popen(
-                        ["ytmusicapi", "oauth"],
-                        creationflags=subprocess.CREATE_NEW_CONSOLE,
-                    )
+                    try:
+                        process = subprocess.Popen(
+                            ["ytmusicapi", "oauth"],
+                            creationflags=subprocess.CREATE_NEW_CONSOLE,
+                        )
+                    except FileNotFoundError as e:
+                        print(
+                            f"ERROR: Unable to run 'ytmusicapi oauth'.  Is ytmusicapi installed?  Perhaps try running 'pip install ytmusicapi' Exception: {e}"
+                        )
+                        sys.exit(1)
                     process.communicate()
                 else:  # For Unix and Linux
                     try:
