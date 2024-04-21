@@ -33,6 +33,10 @@ brew install python
 brew install python-tk
 ```
 
+Install certificates by doing:
+
+Macintosh HD > Applications > Python Folder > double click on "Install Certificates.command" file.
+
 ### For Linux
 
 You probably already have it installed.  See your package manager of choice to
