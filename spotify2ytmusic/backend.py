@@ -453,7 +453,7 @@ def copy_playlist(
         ytmusic_playlist_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={ytmusic_playlist_id}")
 
-    if ytmusic_playlist_id == "":
+    if ytmusic_playlist_id is None:
         if pl_name == "":
             print("No playlist name or ID provided, creating playlist...")
             spotify_pls: dict = load_playlists_json()
