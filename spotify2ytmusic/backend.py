@@ -428,9 +428,10 @@ def copier(
                             duplicates=False,
                         )
                 else:
-                    for dst_track in dst_tracks:
-                        yt.rate_song(dst_track, "LIKE")
-                    break
+                    with ThreadPoolExecutor(max_workers=10) as executor:
+                        for dst_track in dst_tracks:
+                            executor.submit(yt.rate_song, dst_track, "LIKE")
+                break
             except Exception as e:
                 print(
                     f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_tracks}) {e} in {exception_sleep} seconds"
