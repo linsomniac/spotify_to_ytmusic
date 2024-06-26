@@ -11,6 +11,8 @@ from typing import Optional, Union, Iterator, Dict, List
 from collections import namedtuple
 from dataclasses import dataclass, field
 
+from concurrent.futures import ThreadPoolExecutor
+
 
 SongInfo = namedtuple("SongInfo", ["title", "artist", "album"])
 
@@ -80,6 +82,9 @@ def _ytmusic_create_playlist(
 def load_playlists_json(filename: str = "playlists.json", encoding: str = "utf-8"):
     """Load the `playlists.json` Spotify playlist file"""
     return json.load(open(filename, "r", encoding=encoding))
+
+def save_playlists_json(content, filename: str, encoding: str = "utf-8"):
+    return json.dump(content, open(filename, "w", encoding=encoding))
 
 
 def create_playlist(pl_name: str, privacy_status: str = "PRIVATE") -> None:
@@ -376,7 +381,8 @@ def copier(
     duplicate_count = 0
     error_count = 0
 
-    for src_track in src_tracks:
+    def get_dst_track(src_track):
+
         print(f"Spotify:   {src_track.title} - {src_track.artist} - {src_track.album}")
 
         try:
@@ -386,7 +392,7 @@ def copier(
         except Exception as e:
             print(f"ERROR: Unable to look up song on YTMusic: {e}")
             error_count += 1
-            continue
+            return
 
         yt_artist_name = "<Unknown>"
         if "artists" in dst_track and len(dst_track["artists"]) > 0:
@@ -397,31 +403,40 @@ def copier(
 
         if dst_track["videoId"] in tracks_added_set:
             print("(DUPLICATE, this track has already been added)")
-            duplicate_count += 1
         tracks_added_set.add(dst_track["videoId"])
-
-        if not dry_run:
-            exception_sleep = 5
-            for _ in range(10):
-                try:
-                    if dst_pl_id is not None:
-                        yt.add_playlist_items(
-                            playlistId=dst_pl_id,
-                            videoIds=[dst_track["videoId"]],
-                            duplicates=False,
-                        )
-                    else:
-                        yt.rate_song(dst_track["videoId"], "LIKE")
-                    break
-                except Exception as e:
-                    print(
-                        f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e} in {exception_sleep} seconds"
-                    )
-                    time.sleep(exception_sleep)
-                    exception_sleep *= 2
 
         if track_sleep:
             time.sleep(track_sleep)
+        return dst_track
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        dst_tracks = [ dst_track["videoId"] for dst_track in executor.map(get_dst_track, src_tracks) ]
+
+    if not dry_run:
+        exception_sleep = 5
+        for _ in range(10):
+            try:
+                if dst_pl_id is not None:
+                    already_in = set([item["videoId"] for item in yt.get_playlist(playlistId=dst_pl_id, limit=None)["tracks"]])
+                    print(f"found {len(already_in)} tracks already in playlist {dst_pl_id}")
+                    dst_tracks = list(set(dst_tracks) - already_in)
+                    if len(dst_tracks) > 0:
+                        print(f"adding new {len(dst_tracks)} tracks to playlist {dst_pl_id}")
+                        yt.add_playlist_items(
+                            playlistId=dst_pl_id,
+                            videoIds=dst_tracks,
+                            duplicates=False,
+                        )
+                else:
+                    for dst_track in dst_tracks:
+                        yt.rate_song(dst_track, "LIKE")
+                    break
+            except Exception as e:
+                print(
+                    f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_tracks}) {e} in {exception_sleep} seconds"
+                )
+                time.sleep(exception_sleep)
+                exception_sleep *= 2
 
     print()
     print(
@@ -502,8 +517,27 @@ def copy_all_playlists(
     spotify_pls = load_playlists_json()
     yt = get_ytmusic()
 
+    copied_playlist_file = "copied_playlists.json"
+
+    try:
+        copied_playlist = load_playlists_json(copied_playlist_file)
+    except:
+        print('no playlist copied so far')
+        copied_playlist = load_playlists_json()
+        copied_playlist['playlists'] = []
+        save_playlists_json(copied_playlist, copied_playlist_file)
+
+    def add_copied_playlist(src_pl):
+        copied_playlist['playlists'].append(src_pl)
+        save_playlists_json(copied_playlist, copied_playlist_file)
+
+    copied_playlist_lookup = set([x.get('name') for x in copied_playlist['playlists']])
+
     for src_pl in spotify_pls["playlists"]:
         if str(src_pl.get("name")) == "Liked Songs":
+            continue
+
+        if str(src_pl.get("name")) in copied_playlist_lookup:
             continue
 
         pl_name = src_pl["name"]
@@ -535,5 +569,7 @@ def copy_all_playlists(
             yt_search_algo,
         )
         print("\nPlaylist done!\n")
+
+        add_copied_playlist(src_pl)
 
     print("All done!")
