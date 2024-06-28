@@ -5,6 +5,7 @@ import sys
 import os
 import time
 import re
+import random
 
 from ytmusicapi import YTMusic
 from typing import Optional, Union, Iterator, Dict, List
@@ -215,7 +216,6 @@ def get_playlist_id_by_name(yt: YTMusic, title: str) -> Optional[str]:
 
     return None
 
-
 @dataclass
 class ResearchDetails:
     query: Optional[str] = field(default=None)
@@ -349,8 +349,17 @@ def lookup_song(
                 else:
                     return songs[0]
 
+def retry_with_exponential_backoff(f, max_retries=5):
+    n = 1
+    for _ in range(max_retries):
+        try:
+            f()
+            break
+        except:
+            time.sleep((2 ** n) + (random.randint(0, 1000) / 1000))
+            n += 1
 
-def copier(
+def copier_inner(
     src_tracks: Iterator[SongInfo],
     dst_pl_id: Optional[str] = None,
     dry_run: bool = False,
@@ -451,6 +460,20 @@ def copier(
         f"Added {len(tracks_added_set)} tracks, encountered {duplicate_count} duplicates, {error_count} errors"
     )
 
+def copier(
+    src_tracks: Iterator[SongInfo],
+    dst_pl_id: Optional[str] = None,
+    dry_run: bool = False,
+    track_sleep: float = 0.1,
+    yt_search_algo: int = 0,
+    *,
+    yt: Optional[YTMusic] = None,
+):
+    """
+    @@@
+    """
+    retry_with_exponential_backoff(lambda : copier_inner(src_tracks, dst_pl_id=dst_pl_id, dry_run=dry_run, track_sleep=track_sleep, yt_search_algo=yt_search_algo, yt=yt))
+
 
 def copy_playlist(
     spotify_playlist_id: str,
@@ -541,12 +564,12 @@ def copy_all_playlists(
 
     copied_playlist_lookup = set([x.get('name') for x in copied_playlist['playlists']])
 
-    for src_pl in spotify_pls["playlists"]:
+    def copy_playlist(src_pl):
         if str(src_pl.get("name")) == "Liked Songs":
-            continue
+            return
 
         if str(src_pl.get("name")) in copied_playlist_lookup:
-            continue
+            return
 
         pl_name = src_pl["name"]
         if pl_name == "":
@@ -579,5 +602,8 @@ def copy_all_playlists(
         print("\nPlaylist done!\n")
 
         add_copied_playlist(src_pl)
+
+    for src_pl in spotify_pls["playlists"]:
+        retry_with_exponential_backoff(lambda : copy_playlist(src_pl))
 
     print("All done!")
