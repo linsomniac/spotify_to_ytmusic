@@ -391,8 +391,7 @@ def copier(
             )
         except Exception as e:
             print(f"ERROR: Unable to look up song on YTMusic: {e}")
-            error_count += 1
-            return
+            return None, 1
 
         yt_artist_name = "<Unknown>"
         if "artists" in dst_track and len(dst_track["artists"]) > 0:
@@ -407,10 +406,18 @@ def copier(
 
         if track_sleep:
             time.sleep(track_sleep)
-        return dst_track
+        return dst_track, 0
 
     with ThreadPoolExecutor(max_workers=10) as executor:
-        dst_tracks = [ dst_track["videoId"] for dst_track in executor.map(get_dst_track, src_tracks) ]
+        dst_tracks_with_error_counts = executor.map(get_dst_track, src_tracks)
+
+    (dst_tracks, error_counts) = zip(*dst_tracks_with_error_counts)
+
+    dst_tracks = [ dst_track["videoId"] for dst_track in dst_tracks if dst_track is not None ]
+    error_count = sum(error_counts)
+
+    def like_song(dst_track):
+        print(f'liking track: {dst_track}: {yt.rate_song(dst_track, "LIKE")}')
 
     if not dry_run:
         exception_sleep = 5
@@ -430,7 +437,7 @@ def copier(
                 else:
                     with ThreadPoolExecutor(max_workers=10) as executor:
                         for dst_track in dst_tracks:
-                            executor.submit(yt.rate_song, dst_track, "LIKE")
+                            executor.submit(like_song, dst_track)
                 break
             except Exception as e:
                 print(
