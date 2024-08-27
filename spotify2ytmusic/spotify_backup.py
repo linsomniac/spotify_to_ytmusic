@@ -187,7 +187,7 @@ def main(dump="playlists,liked", format="json", file="playlists.json", token="")
             for playlist in playlists:
                 f.write(playlist["name"] + "\r\n")
                 for track in playlist["tracks"]:
-                    if track["track"] is None:
+                    if track["track"] is None or track["track"]["type"] == "episode":
                         continue
                     f.write(
                         "{name}\t{artists}\t{album}\t{uri}\t{release_date}\r\n".format(
