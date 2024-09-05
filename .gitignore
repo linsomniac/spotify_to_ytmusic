@@ -7,3 +7,4 @@ spotify2ytmusic/settings.json
 spotify2ytmusic/test.py
 .idea/
 _backup.json
+.DS_Store

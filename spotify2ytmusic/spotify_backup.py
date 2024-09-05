@@ -168,6 +168,10 @@ def main(dump="playlists,liked", format="json", file="playlists.json", token="")
 
         # List all tracks in each playlist
         for playlist in playlist_data:
+            if playlist["owner"]["id"] == "spotify":
+                print("Skipping Spotify playlist: {name} ({tracks[total]} songs)".format(**playlist))
+                continue
+
             print("Loading playlist: {name} ({tracks[total]} songs)".format(**playlist))
             playlist["tracks"] = spotify.list(
                 playlist["tracks"]["href"], {"limit": 100}
