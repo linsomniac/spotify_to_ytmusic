@@ -320,16 +320,13 @@ class Window:
                 else:  # For Unix and Linux
                     try:
                         subprocess.call(
-                            "x-terminal-emulator -e ytmusicapi oauth",
+                            "ytmusicapi oauth",
                             shell=True,
                             stdout=subprocess.PIPE,
                         )
-                    except:
-                        subprocess.call(
-                            "xterm -e ytmusicapi oauth",
-                            shell=True,
-                            stdout=subprocess.PIPE,
-                        )
+                    except Exception as e:
+                        print(f"An error occurred: {e}")
+
 
             self.tabControl.select(self.tab2)
             print()
