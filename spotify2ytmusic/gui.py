@@ -320,7 +320,7 @@ class Window:
                 else:  # For Unix and Linux
                     try:
                         subprocess.call(
-                            "ytmusicapi oauth",
+                            "python3 -m ytmusicapi oauth",
                             shell=True,
                             stdout=subprocess.PIPE,
                         )
