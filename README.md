@@ -10,7 +10,7 @@ ytmusicapi oauth
 cd spotify2ytmusic && python3 spotify_backup.py playlists.json --dump=liked,playlists --format=json
 mv playlists.json ..
 cd .. && python3 ./reverse_playlist.py ./playlists.json -r
-python -m spotify2ytmusic load_liked_albums --track-sleep=3
+python -m spotify2ytmusic load_liked --track-sleep=3 && python -m spotify2ytmusic load_liked_albums --track-sleep=3 && python -m spotify2ytmusic copy_all_playlists --track-sleep=3 
 ```
 
 # Avoiding Ban:
