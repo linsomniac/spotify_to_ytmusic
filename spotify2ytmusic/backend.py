@@ -471,7 +471,7 @@ def copy_playlist(
         ytmusic_playlist_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={ytmusic_playlist_id}")
 
-    if ytmusic_playlist_id is None:
+    if not ytmusic_playlist_id or ytmusic_playlist_id is None:
         if pl_name == "":
             print("No playlist name or ID provided, creating playlist...")
             spotify_pls: dict = load_playlists_json()
@@ -479,18 +479,24 @@ def copy_playlist(
                 if len(pl.keys()) > 3 and pl["id"] == spotify_playlist_id:
                     pl_name = pl["name"]
 
-        ytmusic_playlist_id = _ytmusic_create_playlist(
-            yt,
-            title=pl_name,
-            description=pl_name,
-            privacy_status=privacy_status,
-        )
+        ytmusic_playlist_id = get_playlist_id_by_name(yt, pl_name)
 
         #  create_playlist returns a dict if there was an error
-        if isinstance(ytmusic_playlist_id, dict):
-            print(f"ERROR: Failed to create playlist: {ytmusic_playlist_id}")
-            sys.exit(1)
-        print(f"NOTE: Created playlist '{pl_name}' with ID: {ytmusic_playlist_id}")
+        if not ytmusic_playlist_id:
+            ytmusic_playlist_id = _ytmusic_create_playlist(
+                yt,
+                title=pl_name,
+                description=pl_name,
+                privacy_status=privacy_status,
+            )
+
+            #  create_playlist returns a dict if there was an error
+            if isinstance(ytmusic_playlist_id, dict):
+                print(f"ERROR: Failed to create playlist: {ytmusic_playlist_id}")
+                sys.exit(1)
+            print(f"NOTE: Created playlist '{pl_name}' with ID: {ytmusic_playlist_id}")
+        else:
+            print(f"NOTE: '{pl_name}' already exists with ID: {ytmusic_playlist_id}. Appending...")  
 
     copier(
         iter_spotify_playlist(
