@@ -17,3 +17,7 @@ python -u -m spotify2ytmusic load_liked --track-sleep=3 --algo 0 2>&1 | tee -a l
 # Avoiding Ban:
 
 Run the terminal application to transfer all playlists with a time to sleep of 3 seconds --track-sleep=3
+
+# Connection Stability
+
+Various retry functions were added to the backend to ensure that a faulty connection does not prevent songs from being transfered.
