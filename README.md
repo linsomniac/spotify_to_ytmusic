@@ -9,7 +9,7 @@ pip3 install ytmusicapi
 ytmusicapi oauth
 cd spotify2ytmusic && python3 spotify_backup.py
 python3 spotify-backup.py playlists.json --dump=liked,playlists --format=json
-cd .. && python3 .\reverse_playlist.py ./playlists.json -r
+cd .. && python3 ./reverse_playlist.py ./playlists.json -r
 python3 -m spotify2ytmusic gui --track-sleep=3
 ```
 
