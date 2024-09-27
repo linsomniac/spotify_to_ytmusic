@@ -1,5 +1,7 @@
 # Running:
 ```
+brew install python
+brew install python-tk
 git clone https://github.com/CY83R-3X71NC710N/spotify_to_ytmusic.git && cd spotify_to_ytmusic
 python3 -m venv path/to/venv
 source path/to/venv/bin/activate
