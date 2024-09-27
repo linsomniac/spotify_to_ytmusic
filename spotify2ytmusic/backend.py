@@ -356,7 +356,8 @@ def copier(
 ):
     """
     Copies tracks from a source to a YouTube playlist, retrying indefinitely
-    if network issues occur during song lookup or playlist addition.
+    if network issues occur during song lookup or playlist addition,
+    but limiting retries for specific errors like "track not found".
     """
     if yt is None:
         yt = get_ytmusic()
@@ -381,15 +382,29 @@ def copier(
 
         # Retry song lookup indefinitely until successful
         dst_track = None
+        retries = 0
+        max_retries = 3  # Limit for specific error retries
         while dst_track is None:
             try:
                 dst_track = lookup_song(
                     yt, src_track.title, src_track.artist, src_track.album, yt_search_algo
                 )
             except Exception as e:
-                print(f"ERROR: Unable to look up song on YTMusic: {e}, retrying in 5 seconds...")
-                time.sleep(5)  # Delay before retrying
-                error_count += 1
+                # Check if it's a specific error indicating the track was not found
+                if "list index out of range" in str(e):
+                    retries += 1
+                    if retries >= max_retries:
+                        print(f"ERROR: Track not found after {max_retries} retries: {src_track.title}")
+                        break  # Stop retrying this track
+                else:
+                    # If it's a different error, keep retrying indefinitely
+                    print(f"ERROR: Unable to look up song on YTMusic: {e}, retrying in 5 seconds...")
+                    time.sleep(5)  # Delay before retrying
+                    error_count += 1
+
+        # If dst_track is still None, it means we have exceeded max retries
+        if dst_track is None:
+            continue  # Skip to the next track
 
         yt_artist_name = "<Unknown>"
         if "artists" in dst_track and len(dst_track["artists"]) > 0:
@@ -431,7 +446,6 @@ def copier(
 
     print()
     print(f"Added {len(tracks_added_set)} tracks, encountered {duplicate_count} duplicates, {error_count} errors")
-
 def copy_playlist(
     spotify_playlist_id: str,
     ytmusic_playlist_id: str,
