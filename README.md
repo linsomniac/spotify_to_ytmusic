@@ -11,7 +11,7 @@ cd spotify2ytmusic && python3 spotify_backup.py playlists.json --dump=liked,play
 mv playlists.json ..
 cd .. && python3 ./reverse_playlist.py ./playlists.json -r
 rm -rf log.txt
-python -u -m spotify2ytmusic load_liked --track-sleep=3 --algo 0 2>&1 | tee -a log.txt && python -u -m spotify2ytmusic load_liked_albums --track-sleep=3 --algo 0 2>&1 | tee -a log.txt && python -u -m spotify2ytmusic copy_all_playlists --track-sleep=3 --algo 0 --privacy 'PRIVATE' 2>&1 | tee -a log.txt
+python -u -m spotify2ytmusic load_liked --track-sleep=3 --algo 0 2>&1 | tee -a log.txt && python -u -m spotify2ytmusic load_liked_albums --track-sleep=3 --algo 0 2>&1 | tee -a log.txt && python -u -m spotify2ytmusic copy_all_playlists --track-sleep=3 --algo 0 --privacy PRIVATE 2>&1 | tee -a log.txt
 ```
 
 # Avoiding Ban:
