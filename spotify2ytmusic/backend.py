@@ -355,20 +355,20 @@ def copier(
     yt: Optional[YTMusic] = None,
 ):
     """
-    @@@
+    Copies tracks from a source to a YouTube playlist, retrying indefinitely
+    if network issues occur during song lookup or playlist addition.
     """
     if yt is None:
         yt = get_ytmusic()
 
+    # Try to get playlist if specified
     if dst_pl_id is not None:
         try:
             yt_pl = yt.get_playlist(playlistId=dst_pl_id)
         except Exception as e:
             print(f"ERROR: Unable to find YTMusic playlist {dst_pl_id}: {e}")
-            print(
-                "       Make sure the YTMusic playlist ID is correct, it should be something like "
-            )
-            print("      'PL_DhcdsaJ7echjfdsaJFhdsWUd73HJFca'")
+            print("       Make sure the YTMusic playlist ID is correct, it should be something like")
+            print("       'PL_DhcdsaJ7echjfdsaJFhdsWUd73HJFca'")
             sys.exit(1)
         print(f"== Youtube Playlist: {yt_pl['title']}")
 
@@ -379,14 +379,17 @@ def copier(
     for src_track in src_tracks:
         print(f"Spotify:   {src_track.title} - {src_track.artist} - {src_track.album}")
 
-        try:
-            dst_track = lookup_song(
-                yt, src_track.title, src_track.artist, src_track.album, yt_search_algo
-            )
-        except Exception as e:
-            print(f"ERROR: Unable to look up song on YTMusic: {e}")
-            error_count += 1
-            continue
+        # Retry song lookup indefinitely until successful
+        dst_track = None
+        while dst_track is None:
+            try:
+                dst_track = lookup_song(
+                    yt, src_track.title, src_track.artist, src_track.album, yt_search_algo
+                )
+            except Exception as e:
+                print(f"ERROR: Unable to look up song on YTMusic: {e}, retrying in 5 seconds...")
+                time.sleep(5)  # Delay before retrying
+                error_count += 1
 
         yt_artist_name = "<Unknown>"
         if "artists" in dst_track and len(dst_track["artists"]) > 0:
@@ -398,11 +401,14 @@ def copier(
         if dst_track["videoId"] in tracks_added_set:
             print("(DUPLICATE, this track has already been added)")
             duplicate_count += 1
+            continue
         tracks_added_set.add(dst_track["videoId"])
 
         if not dry_run:
             exception_sleep = 5
-            for _ in range(10):
+
+            # Retry playlist addition indefinitely until successful
+            while True:
                 try:
                     if dst_pl_id is not None:
                         yt.add_playlist_items(
@@ -412,20 +418,19 @@ def copier(
                         )
                     else:
                         yt.rate_song(dst_track["videoId"], "LIKE")
-                    break
+                    break  # Break out of the loop on success
                 except Exception as e:
                     print(
-                        f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e} in {exception_sleep} seconds"
+                        f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e}, retrying in {exception_sleep} seconds"
                     )
                     time.sleep(exception_sleep)
-                    exception_sleep *= 2
+                    exception_sleep = min(exception_sleep * 2, 320)  # Exponential backoff with max delay
 
         if track_sleep:
             time.sleep(track_sleep)
 
     print()
-    print(
-        f"Added {len(tracks_added_set)} tracks, encountered {duplicate_count} duplicates, {error_count} errors"
+    print(f"Added {len(tracks_added_set)} tracks, encountered {duplicate_count} duplicates, {error_count} errors")
     )
 
 
