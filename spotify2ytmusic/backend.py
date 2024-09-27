@@ -446,6 +446,7 @@ def copier(
 
     print()
     print(f"Added {len(tracks_added_set)} tracks, encountered {duplicate_count} duplicates, {error_count} errors")
+    
 def copy_playlist(
     spotify_playlist_id: str,
     ytmusic_playlist_id: str,
