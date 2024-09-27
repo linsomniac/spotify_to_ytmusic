@@ -21,3 +21,6 @@ Run the terminal application to transfer all playlists with a time to sleep of 3
 # Connection Stability
 
 Various retry functions were added to the backend to ensure that a faulty connection does not prevent songs from being transfered.
+
+# Ideas
+Look into creating a youtube to youtube version of this, which works off google takeout data (possibly create a script to backup youtube through github actions daily), and can restore data to a new youtube account.
