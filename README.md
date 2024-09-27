@@ -8,6 +8,7 @@ source path/to/venv/bin/activate
 pip3 install ytmusicapi
 ytmusicapi oauth
 cd spotify2ytmusic && python3 spotify_backup.py playlists.json --dump=liked,playlists --format=json
+mv playlists.json ..
 cd .. && python3 ./reverse_playlist.py ./playlists.json -r
 python3 -m spotify2ytmusic gui --track-sleep=3
 ```
