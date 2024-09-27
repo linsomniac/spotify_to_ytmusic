@@ -5,6 +5,8 @@ python3 -m venv path/to/venv
 source path/to/venv/bin/activate
 pip3 install ytmusicapi
 ytmusicapi oauth
+cd spotify2ytmusic && python3 spotify-backup.py
+python3 spotify-backup.py playlists.json --dump=liked,playlists --format=json
 python3 -m spotify2ytmusic gui --track-sleep=3
 ```
 
