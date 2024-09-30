@@ -153,7 +153,7 @@ def main(dump="playlists,liked", format="json", file="playlists.json", token="")
     if "liked" in dump:
         print("Loading liked albums and songs...")
         liked_tracks = spotify.list(
-            "users/{user_id}/tracks".format(user_id=user_id_escaped), {"limit": 50}
+            "me/tracks".format(user_id=user_id_escaped), {"limit": 50}
         )
         liked_albums = spotify.list("me/albums", {"limit": 50})
         playlists += [{"name": "Liked Songs", "tracks": liked_tracks}]
@@ -162,7 +162,7 @@ def main(dump="playlists,liked", format="json", file="playlists.json", token="")
     if "playlists" in dump:
         print("Loading playlists...")
         playlist_data = spotify.list(
-            "users/{user_id}/playlists".format(user_id=user_id_escaped), {"limit": 50}
+            "me/playlists".format(user_id=user_id_escaped), {"limit": 50}
         )
         print(f"Found {len(playlist_data)} playlists")
 
@@ -187,7 +187,7 @@ def main(dump="playlists,liked", format="json", file="playlists.json", token="")
             for playlist in playlists:
                 f.write(playlist["name"] + "\r\n")
                 for track in playlist["tracks"]:
-                    if track["track"] is None:
+                    if track["track"] is None or track["track"]["type"] == "episode":
                         continue
                     f.write(
                         "{name}\t{artists}\t{album}\t{uri}\t{release_date}\r\n".format(
