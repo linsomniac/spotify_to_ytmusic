@@ -14,6 +14,15 @@ rm -rf log.txt
 python -u -m spotify2ytmusic load_liked --track-sleep=3 --algo 0 2>&1 | tee -a log.txt && python -u -m spotify2ytmusic load_liked_albums --track-sleep=3 --algo 0 2>&1 | tee -a log.txt && python -u -m spotify2ytmusic copy_all_playlists --track-sleep=3 --algo 0 --privacy PRIVATE 2>&1 | tee -a log.txt
 ```
 
+# For Highest Accuracy of songs:
+Run this commnad
+
+```
+python -u -m spotify2ytmusic load_liked --track-sleep=3 --algo 0 2>&1 | tee -a log.txt && python -u -m spotify2ytmusic load_liked_albums --track-sleep=3 --algo 0 2>&1 | tee -a log.txt && python -u -m spotify2ytmusic copy_all_playlists --track-sleep=3 --algo 0 --privacy PRIVATE 2>&1 | tee -a log.txt
+```
+
+Three different times with every single algorithm 0,1,2
+
 # Avoiding Ban:
 
 Run the terminal application to transfer all playlists with a time to sleep of 3 seconds --track-sleep=3
