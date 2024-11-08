@@ -52,6 +52,18 @@ or:
 
 `python3 -m pip install spotify2ytmusic`
 
+## (Or) Install using Nix
+
+(Highly recommended)
+
+If you have [Nix](https://nixos.org/) you can install directly, with no other pre-requisites.
+
+```
+$ nix build -o spotify2ytmusic github:linsomniac/spotify_to_ytmusic
+
+$ ./spotify2ytmusic/bin/s2yt_gui &
+```
+
 ## (Or) Running From Source
 
 (Not recommended)
