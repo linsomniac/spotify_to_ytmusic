@@ -6,7 +6,7 @@ import os
 import time
 import re
 
-from ytmusicapi import YTMusic
+from ytmusicapi import YTMusic, setup
 from typing import Optional, Union, Iterator, Dict, List
 from collections import namedtuple
 from dataclasses import dataclass, field
@@ -19,17 +19,16 @@ def get_ytmusic() -> YTMusic:
     """
     @@@
     """
-    if not os.path.exists("oauth.json"):
-        print("ERROR: No file 'oauth.json' exists in the current directory.")
-        print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
+    if not os.path.exists("browser.json"):
+        print("ERROR: No file 'browser.json' exists in the current directory.")
+        print("       Have you logged in to YTMusic?  Run 'ytmusicapi browser' to login")
         sys.exit(1)
-
     try:
-        return YTMusic("oauth.json")
+        return YTMusic("browser.json")
     except json.decoder.JSONDecodeError as e:
         print(f"ERROR: JSON Decode error while trying start YTMusic: {e}")
-        print("       This typically means a problem with a 'oauth.json' file.")
-        print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
+        print("       This typically means a problem with a 'browser.json' file.")
+        print("       Have you logged in to YTMusic?  Run 'ytmusicapi browser' to login")
         sys.exit(1)
 
 
