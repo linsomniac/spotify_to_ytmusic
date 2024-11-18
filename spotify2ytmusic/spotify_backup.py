@@ -153,7 +153,7 @@ def main(dump="playlists,liked", format="json", file="playlists.json", token="")
     if "liked" in dump:
         print("Loading liked albums and songs...")
         liked_tracks = spotify.list(
-            "users/{user_id}/tracks".format(user_id=user_id_escaped), {"limit": 50}
+            "me/tracks", {"limit": 50}
         )
         liked_albums = spotify.list("me/albums", {"limit": 50})
         playlists += [{"name": "Liked Songs", "tracks": liked_tracks}]

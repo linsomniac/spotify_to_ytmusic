@@ -336,11 +336,11 @@ def gui():
     gui.main()
 
 
-def ytoauth():
+def ytheaders():
     """
-    Run the "ytmusicapi oauth" login.
+    Run the "ytmusicapi browser" login.
     """
     from ytmusicapi.setup import main
 
-    sys.argv = ["ytmusicapi", "oauth"]
+    sys.argv = ["ytmusicapi", "browser"]
     sys.exit(main())

@@ -289,14 +289,14 @@ class Window:
         print()
 
     def yt_login(self, auto=False) -> None:
-        """Logs in to YT Music. If the oauth.json file is not found, it opens a new console window to run the 'ytmusicapi oauth' command.
+        """Logs in to YT Music. If the browser.json file is not found, it opens a new console window to run the 'ytmusicapi browser' command.
 
         Args:
             auto (bool, optional): Weather to automatically login using the oauth.json file. Defaults to False.
         """
 
         def run_in_thread():
-            if os.path.exists("oauth.json"):
+            if os.path.exists("browser.json"):
                 print("File detected, auto login")
             elif auto:
                 print("No file detected. Manual login required")
@@ -308,25 +308,25 @@ class Window:
                 if os.name == "nt":  # If the OS is Windows
                     try:
                         process = subprocess.Popen(
-                            ["ytmusicapi", "oauth"],
+                            ["ytmusicapi", "browser"],
                             creationflags=subprocess.CREATE_NEW_CONSOLE,
                         )
                     except FileNotFoundError as e:
                         print(
-                            f"ERROR: Unable to run 'ytmusicapi oauth'.  Is ytmusicapi installed?  Perhaps try running 'pip install ytmusicapi' Exception: {e}"
+                            f"ERROR: Unable to run 'ytmusicapi browser'.  Is ytmusicapi installed?  Perhaps try running 'pip install ytmusicapi' Exception: {e}"
                         )
                         sys.exit(1)
                     process.communicate()
                 else:  # For Unix and Linux
                     try:
                         subprocess.call(
-                            "x-terminal-emulator -e ytmusicapi oauth",
+                            "x-terminal-emulator -e ytmusicapi browser",
                             shell=True,
                             stdout=subprocess.PIPE,
                         )
                     except:
                         subprocess.call(
-                            "xterm -e ytmusicapi oauth",
+                            "xterm -e ytmusicapi browser",
                             shell=True,
                             stdout=subprocess.PIPE,
                         )
