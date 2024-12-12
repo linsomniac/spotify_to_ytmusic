@@ -216,7 +216,7 @@ class Window:
             command=lambda: self.call_func(
                 func=backend.copy_playlist,
                 args=(
-                    self.spotify_playlist_id.get(),
+                    self.spotify_playlist_id.get().strip(),
                     self.yt_playlist_id.get(),
                     "utf-8",
                     False,
@@ -320,16 +320,13 @@ class Window:
                 else:  # For Unix and Linux
                     try:
                         subprocess.call(
-                            "x-terminal-emulator -e ytmusicapi oauth",
+                            "python3 -m ytmusicapi oauth",
                             shell=True,
                             stdout=subprocess.PIPE,
                         )
-                    except:
-                        subprocess.call(
-                            "xterm -e ytmusicapi oauth",
-                            shell=True,
-                            stdout=subprocess.PIPE,
-                        )
+                    except Exception as e:
+                        print(f"An error occurred: {e}")
+
 
             self.tabControl.select(self.tab2)
             print()
