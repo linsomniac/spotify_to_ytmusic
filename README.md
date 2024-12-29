@@ -13,22 +13,47 @@ project.
 
 # Getting Started
 
+## Generating YouTube API Credentials
+
+To connect to the YouTube Music API, you must create a Client ID and Secret for the YouTube Data API. Follow these steps:
+
+1. **Create a Google Cloud Project**
+   - Navigate to [Google Cloud Console](https://console.cloud.google.com/).
+   - Create a new project or select an existing one.
+
+2. **Enable the YouTube Data API**
+   - Go to the **Library** section in the console.
+   - Search for **YouTube Data API v3** and click **Enable**.
+
+3. **Create OAuth Credentials**
+   - Go to the **Credentials** section.
+   - Click **CREATE CREDENTIALS** and choose **OAuth Client ID**.
+   - For the application type, select **TV and Limited Input Devices**.
+   - Complete the process and note down the **Client ID** and **Client Secret**.
+
+4. **Set Up the OAuth Consent Screen**
+   - Navigate to the **OAuth Consent Screen** section.
+   - Set the user type (choose **External** for most cases) and configure the details.
+   - Add your Gmail address to the **Test Users** list to allow access during testing.
+
+5. **Store the Credentials**
+   - Save the **Client ID** and **Client Secret** securely. These will be used to authenticate with the YouTube Music API.
+
 ## Install Python (you may already have it)
 
-You will need a somewhat recent version of Python  3.10 and above are known to work,
+You will need a somewhat recent version of Python 3.10 and above are known to work,
 3.8-3.10 might work.
 
 ### For Windows
 
-Download Python for Windows from: https://www.python.org/downloads/windows/
-
+Download Python for Windows from: <https://www.python.org/downloads/windows/>
 You can also use choco to install it: `choco install python`
 
 ### For MacOS
 
 Run:
 
-```
+```shell
 brew install python
 brew install python-tk
 ```
@@ -39,17 +64,14 @@ Macintosh HD > Applications > Python Folder > double click on "Install Certifica
 
 ### For Linux
 
-You probably already have it installed.  See your package manager of choice to
+You probably already have it installed. See your package manager of choice to
 install it.
 
 ## Install spotify2ytmusic (via pip)
 
 This package is available on pip, so you can install it using:
-
 `pip install spotify2ytmusic`
-
 or:
-
 `python3 -m pip install spotify2ytmusic`
 
 ## (Or) Running From Source
@@ -57,7 +79,7 @@ or:
 (Not recommended)
 
 Another option, instead of pip, is to just clone this repo and run directly from the
-source.  However, you will need the "ytmusicapi" package installed, so you'll probably
+source. However, you will need the "ytmusicapi" package installed, so you'll probably
 want to use pip to install that at the very least.
 
 To run directly from source:
@@ -105,10 +127,10 @@ OR
 
 Run `python -m spotify2ytmusic ytoauth`
 
-This will give you a URL, visit that URL and authorize the application.  When you are
+This will give you a URL, visit that URL and authorize the application. When you are
 done with the import you can remove the authorization for this app.
 
-This will write a file "oauth.json".  Keep this file secret while the app is authorized.
+This will write a file "oauth.json". Keep this file secret while the app is authorized.
 This file includes a logged in session token.
 
 ytmusicapi is a dependency of this software and should be installed as part of the "pip
@@ -116,7 +138,7 @@ install".
 
 ### Backup Your Spotify Playlists - Tab 1
 
-#### Click the `Backup` button, and wait until it finished and switched to the next tab.
+#### Click the `Backup` button, and wait until it finished and switched to the next tab
 
 **OR** do all the steps below
 
@@ -130,26 +152,27 @@ Run: `python3 spotify-backup.py playlists.json --dump=liked,playlists --format=j
 This will save your playlists and liked songs into the file "playlists.json".
 
 ### Reverse your playlists - Tab 2
+
 As mentionned below, the original program adds the songs in the 'wrong' order. That's a
 feature I don't like, so I created a script to reverse them. It seems to be reliable,
 but if you find anything weird, please open an issue. It creates a backup of the
 original file just in case anyway.
 
-
 Example: `python3 .\reverse_playlist.py ./playlists.json -r`
 
 ### Import Your Liked Songs - Tab 3
-#### Click the `import` button, and wait until it finished and switched to the next tab.
 
-It will go through your Spotify liked songs, and like them on YTMusic.  It will display
-the song from spotify and then the song that it found on YTMusic that it is liking.  I've
+#### Click the `import` button, and wait until it finished and switched to the next tab
+
+It will go through your Spotify liked songs, and like them on YTMusic. It will display
+the song from spotify and then the song that it found on YTMusic that it is liking. I've
 spot-checked my songs and it seems to be doing a good job of matching YTMusic songs with
-Spotify.  So far I haven't seen a single failure across a couple hundread songs, but more
+Spotify. So far I haven't seen a single failure across a couple hundread songs, but more
 esoteric titles it may have issues with.
 
 ### List Your Playlists - Tab 4
 
-#### Click the `list` button, and wait until it finished and switched to the next tab.
+#### Click the `list` button, and wait until it finished and switched to the next tab
 
 This will list the playlists you have on both Spotify and YTMusic, so you can individually copy them.
 
@@ -158,14 +181,15 @@ This will list the playlists you have on both Spotify and YTMusic, so you can in
 You can either copy **all** playlists, or do a more surgical copy of individual playlists.
 Copying all playlists will use the name of the Spotify playlist as the destination playlist name on YTMusic.
 
-#### To copy all the playlists click the `copy` button, and wait until it finished and switched to the next tab.
+#### To copy all the playlists click the `copy` button, and wait until it finished and switched to the next tab
 
 **NOTE**: This does not copy the Liked playlist (see above to do that).
 
 ### Copy specific Playlist - Tab 6
 
 In the list output, find the "playlist id" (the first column) of the Spotify playlist and of the YTMusic playlist.
-#### Then fill both input fields and click the `copy` button.
+
+#### Then fill both input fields and click the `copy` button
 
 The copy playlist will take the name of the YTMusic playlist and will create the
 playlist if it does not exist, if you start the YTMusic playlist with a "+":
@@ -179,10 +203,10 @@ will not duplicate entries on the playlist.
 
 `ytmusicapi oauth` or `s2yt_ytoauth` or `python -m spotify2ytmusic ytoauth`
 
-This will give you a URL, visit that URL and authorize the application.  When you are
+This will give you a URL, visit that URL and authorize the application. When you are
 done with the import you can remove the authorization for this app.
 
-This will write a file "oauth.json".  Keep this file secret while the app is authorized.
+This will write a file "oauth.json". Keep this file secret while the app is authorized.
 This file includes a logged in session token.
 
 ytmusicapi is a dependency of this software and should be installed as part of the "pip
@@ -203,31 +227,31 @@ This will save your playlists and liked songs into the file "playlists.json".
 
 Run: `s2yt_load_liked`
 
-It will go through your Spotify liked songs, and like them on YTMusic.  It will display
-the song from spotify and then the song that it found on YTMusic that it is liking.  I've
+It will go through your Spotify liked songs, and like them on YTMusic. It will display
+the song from spotify and then the song that it found on YTMusic that it is liking. I've
 spot-checked my songs and it seems to be doing a good job of matching YTMusic songs with
-Spotify.  So far I haven't seen a single failure across a couple thousand songs, but more
+Spotify. So far I haven't seen a single failure across a couple thousand songs, but more
 esoteric titles it may have issues with.
 
 ### Import Your Liked Albums
 
 Run: `s2yt_load_liked_albums`
 
-Spotify stores liked albums outside of the "Liked Songs" playlist.  This is the command to
+Spotify stores liked albums outside of the "Liked Songs" playlist. This is the command to
 load your liked albums into YTMusic liked songs.
 
 ### List Your Playlists
 
 Run `s2yt_list_playlists`
 
-This will list the playlists you have on both Spotify and YTMusic.  You will need to
+This will list the playlists you have on both Spotify and YTMusic. You will need to
 individually copy them.
 
 ### Copy Your Playlists
 
 You can either copy **all** playlists, or do a more surgical copy of individual playlists.
 Copying all playlists will use the name of the Spotify playlist as the destination
-playlist name on YTMusic.  To copy all playlists, run:
+playlist name on YTMusic. To copy all playlists, run:
 
 `s2yt_copy_all_playlists`
 
@@ -242,7 +266,7 @@ If you need to create a playlist, you can run:
 
 `s2yt_create_playlist "<PLAYLIST_NAME>"`
 
-*Or* the copy playlist can take the name of the YTMusic playlist and will create the
+_Or_ the copy playlist can take the name of the YTMusic playlist and will create the
 playlist if it does not exist, if you start the YTMusic playlist with a "+":
 
 `s2yt_copy_playlist <SPOTIFY_PLAYLIST_ID> +<YTMUSIC_PLAYLIST_NAME>`
@@ -296,10 +320,10 @@ No, this runs on Linux/Windows/MacOS.
 - I get "No matching distribution found for spotify2ytmusic".
 
   This has been reported in [Issue #39](https://github.com/linsomniac/spotify_to_ytmusic/issues/39#issuecomment-1954432174)
-  and it seems like a mismatch between python versions.  Users there, on MacOS, needed
+  and it seems like a mismatch between python versions. Users there, on MacOS, needed
   to install a specific version of Python, and then use the matching version of PIP:
 
-  ```
+  ```shell
   brew install python@3.10
   brew install python-tk@3.10
   pip3.10 install spotify2ytmusic
@@ -309,7 +333,7 @@ No, this runs on Linux/Windows/MacOS.
 
   Given the Spotify track information, it does a lookup for the album by the same artist
   on YTMusic, then looks at the first 3 hits looking for a track with exactly the same
-  name.  In the event that it can't find that exact track, it then does a search of songs
+  name. In the event that it can't find that exact track, it then does a search of songs
   for the track name by the same artist and simply returns the first hit.
 
   The idea is that finding the album and artist and then looking for the exact track match
@@ -320,7 +344,7 @@ No, this runs on Linux/Windows/MacOS.
 - My copy is failing with repeated "ERROR: (Retrying) Server returned HTTP 400: Bad
   Request".
 
-  Try running with "--track-sleep=3" argument to do a 3 second sleep between tracks.  This
+  Try running with "--track-sleep=3" argument to do a 3 second sleep between tracks. This
   will take much longer, but may succeed where faster rates have failed.
 
 ## License
@@ -328,6 +352,6 @@ No, this runs on Linux/Windows/MacOS.
 Creative Commons Zero v1.0 Universal
 
 spotify-backup.py licensed under MIT License.
-See https://github.com/caseychu/spotify-backup for more information.
+See <https://github.com/caseychu/spotify-backup> for more information.
 
-[//]: # ( vim: set tw=90 ts=4 sw=4 ai: )
+[//]: # ' vim: set tw=90 ts=4 sw=4 ai: '
