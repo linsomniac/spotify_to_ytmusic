@@ -1,12 +1,3 @@
-oauth.json
-playlists.json
-__pycache__
-dist/
-spotify2ytmusic/playlists_backup.json
-spotify2ytmusic/settings.json
-spotify2ytmusic/test.py
-.idea/
-_backup.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
