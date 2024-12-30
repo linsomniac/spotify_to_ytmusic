@@ -13,32 +13,6 @@ project.
 
 # Getting Started
 
-## Generating YouTube API Credentials
-
-To connect to the YouTube Music API, you must create a Client ID and Secret for the YouTube Data API. Follow these steps:
-
-1. **Create a Google Cloud Project**
-   - Navigate to [Google Cloud Console](https://console.cloud.google.com/).
-   - Create a new project or select an existing one.
-
-2. **Enable the YouTube Data API**
-   - Go to the **Library** section in the console.
-   - Search for **YouTube Data API v3** and click **Enable**.
-
-3. **Create OAuth Credentials**
-   - Go to the **Credentials** section.
-   - Click **CREATE CREDENTIALS** and choose **OAuth Client ID**.
-   - For the application type, select **TV and Limited Input Devices**.
-   - Complete the process and note down the **Client ID** and **Client Secret**.
-
-4. **Set Up the OAuth Consent Screen**
-   - Navigate to the **OAuth Consent Screen** section.
-   - Set the user type (choose **External** for most cases) and configure the details.
-   - Add your Gmail address to the **Test Users** list to allow access during testing.
-
-5. **Store the Credentials**
-   - Save the **Client ID** and **Client Secret** securely. These will be used to authenticate with the YouTube Music API.
-
 ## Install Python (you may already have it)
 
 You will need a somewhat recent version of Python 3.10 and above are known to work,
