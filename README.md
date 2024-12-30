@@ -110,6 +110,27 @@ This file includes a logged in session token.
 ytmusicapi is a dependency of this software and should be installed as part of the "pip
 install".
 
+OR
+
+### Generate credentials using `generate_ytmusic_credentials.py` script
+
+Follow these steps to generate valid YouTube Music API credentials:
+
+1. **Log in to YouTube Music**: Open [YouTube Music](https://music.youtube.com) in Firefox and ensure you are logged in.
+2. **Open the Inspection Tool**: Press `F12` to open the browser’s inspection tool.
+3. **Access the Network Tab**: Navigate to the **Network** tab and filter by `/browse`.
+4. **Select a Request**: Click on one of the requests under the filtered results and locate the **Request Headers** section.
+5. **Toggle RAW View**: Click on the **RAW** toggle button to view the headers in raw format.
+6. **Copy Headers**: Right-click, choose **Select All**, and then copy the content.
+7. **Paste into `raw_headers.txt`**: Open the `raw_headers.txt` file located in the main directory of this project and paste the copied content into it.
+8. **Run the Script**: Execute the following command to generate the credentials file:
+   ```bash
+   py generate_ytmusic_credentials.py
+   ```
+9. **Done**: The credentials are now ready. You can proceed with the GUI or any other part of the application.
+
+---
+
 ### Backup Your Spotify Playlists - Tab 1
 
 #### Click the `Backup` button, and wait until it finished and switched to the next tab

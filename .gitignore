@@ -173,3 +173,4 @@ cython_debug/
 
 # sensitive info
 oauth.json
+raw_headers.txt
