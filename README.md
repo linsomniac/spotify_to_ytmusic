@@ -66,10 +66,12 @@ Start by creating and activating a Python virtual environment to isolate depende
 ```shell
 git clone https://github.com/AmidelEst/spotify_to_ytmusic.git
 cd spotify_to_ytmusic
-
+```
+```shell
 python -m venv .venv
 .venv\Scripts\activate
-
+```
+```shell
 pip install ytmusicapi
 pip install tk
 pip install spotify2ytmusic
