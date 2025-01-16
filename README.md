@@ -60,16 +60,18 @@ To run directly from source:
 
 ## Setup Instructions
 
-### 1. Create a Virtual Environment & Install Required Packages
+### 1. Clone & Create a Virtual Environment & Install Required Packages
 Start by creating and activating a Python virtual environment to isolate dependencies.
 
 ```shell
-git clone git@github.com:linsomniac/spotify_to_ytmusic.git
+git clone https://github.com/AmidelEst/spotify_to_ytmusic.git
 cd spotify_to_ytmusic
-
+```
+```shell
 python -m venv .venv
 .venv\Scripts\activate
-
+```
+```shell
 pip install ytmusicapi
 pip install tk
 pip install spotify2ytmusic
