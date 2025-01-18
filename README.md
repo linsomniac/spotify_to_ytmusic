@@ -36,50 +36,31 @@ Install certificates by doing:
 
 Macintosh HD > Applications > Python Folder > double click on "Install Certificates.command" file.
 
-### For Linux
-
-You probably already have it installed. See your package manager of choice to
-install it.
-
-## Install spotify2ytmusic (via pip)
-
-This package is available on pip, so you can install it using:
-`pip install spotify2ytmusic`
-or:
-`python3 -m pip install spotify2ytmusic`
-
-## (Or) Running From Source
-
-(Not recommended)
-
-Another option, instead of pip, is to just clone this repo and run directly from the
-source. However, you will need the "ytmusicapi" package installed, so you'll probably
-want to use pip to install that at the very least.
-
-To run directly from source:
+---
 
 ## Setup Instructions
 
 ### 1. Clone & Create a Virtual Environment & Install Required Packages
+
 Start by creating and activating a Python virtual environment to isolate dependencies.
 
 ```shell
 git clone https://github.com/AmidelEst/spotify_to_ytmusic.git
 cd spotify_to_ytmusic
 ```
+
 ```shell
 python -m venv .venv
 .venv\Scripts\activate
+pip install ytmusicapi tk
 ```
-```shell
-pip install ytmusicapi
-pip install tk
-pip install spotify2ytmusic
-```
+
 ---
 
 ### 2. Generate YouTube Music Credentials
+
 To use the YouTube Music API, you need to generate valid credentials. Follow these steps:
+![GIF demonstrating how to inquire about credentials in YouTube Music](assets/youtube-music-instructions.gif)
 
 1. **Log in to YouTube Music**:
    Open [YouTube Music](https://music.youtube.com) in Firefox and ensure you are logged in.
@@ -103,57 +84,56 @@ To use the YouTube Music API, you need to generate valid credentials. Follow the
    Open the `raw_headers.txt` file located in the main directory of this project and paste the copied content into it.
 
 8. **Run the Script**:
+
    Execute the following command to generate the credentials file:
-   
+
    ```bash
-   py generate_ytmusic_credentials.py
+   python spotify2ytmusic/ytmusic_credentials.py
    ```
 
 9. **Done**:
+
    Your YouTube Music credentials are now ready.
 
 ---
 
-### 3. Backup Your Spotify Data
-Run the Spotify backup script to save your playlists and liked songs locally.
+### 3. Use the GUI for Migration
 
-```shell
-py spotify2ytmusic/spotify-backup.py
-```
-
-This step will generate a `playlists.json` file containing your Spotify data.
-
----
-
-### 5. Use the GUI for Migration
-Now you can use the graphical user interface (GUI) to migrate your playlists and liked songs to YouTube Music.
+Now you can use the graphical user interface (GUI) Tab 2 ->  Tab 6
+to migrate your playlists and liked songs to YouTube Music.
 
 Start the GUI with the following command:
 
+On Windows:
 ```shell
 python -m spotify2ytmusic gui
 ```
-
+Or on Linux:
+```shell
+python3 -m spotify2ytmusic gui
+```
 ---
 
 ## GUI Features
 
 Once the GUI is running, you can:
 
+- **Backup Your Spotify Playlists**:  will save your playlists and liked songs into the file "playlists.json".
 - **Load Liked Songs**: Migrate your Spotify liked songs to YouTube Music.
 - **List Playlists**: View your playlists and their details.
 - **Copy All Playlists**: Migrate all Spotify playlists to YouTube Music.
 - **Copy a Specific Playlist**: Select and migrate a specific Spotify playlist to YouTube Music.
 
 ---
+
 ### Import Your Liked Songs - Tab 3
 
 #### Click the `import` button, and wait until it finished and switched to the next tab
 
 It will go through your Spotify liked songs, and like them on YTMusic. It will display
-the song from spotify and then the song that it found on YTMusic that it is liking. I've
+the song from Spotify and then the song that it found on YTMusic that it is liking. I've
 spot-checked my songs and it seems to be doing a good job of matching YTMusic songs with
-Spotify. So far I haven't seen a single failure across a couple hundread songs, but more
+Spotify. So far I haven't seen a single failure across a couple hundred songs, but more
 esoteric titles it may have issues with.
 
 ### List Your Playlists - Tab 4
@@ -183,20 +163,9 @@ playlist if it does not exist, if you start the YTMusic playlist with a "+":
 Re-running "copy_playlist" or "load_liked" in the event that it fails should be safe, it
 will not duplicate entries on the playlist.
 
+---
+
 ## Command Line Usage
-
-### Login to YTMusic
-
-`ytmusicapi oauth` or `s2yt_ytoauth` or `python -m spotify2ytmusic ytoauth`
-
-This will give you a URL, visit that URL and authorize the application. When you are
-done with the import you can remove the authorization for this app.
-
-This will write a file "oauth.json". Keep this file secret while the app is authorized.
-This file includes a logged in session token.
-
-ytmusicapi is a dependency of this software and should be installed as part of the "pip
-install".
 
 ### Backup Your Spotify Playlists
 
@@ -214,7 +183,7 @@ This will save your playlists and liked songs into the file "playlists.json".
 Run: `s2yt_load_liked`
 
 It will go through your Spotify liked songs, and like them on YTMusic. It will display
-the song from spotify and then the song that it found on YTMusic that it is liking. I've
+the song from Spotify and then the song that it found on YTMusic that it is liking. I've
 spot-checked my songs and it seems to be doing a good job of matching YTMusic songs with
 Spotify. So far I haven't seen a single failure across a couple thousand songs, but more
 esoteric titles it may have issues with.
