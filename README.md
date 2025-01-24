@@ -1,57 +1,33 @@
-Tools for moving from Spotify to YTMusic
-
 # Overview
 
 This is a set of scripts for copying "liked" songs and playlists from Spotify to YTMusic.
-It provides both CLI tools and a GUI (implemented by Yoween, formerly called
-[spotify_to_ytmusic_gui](https://github.com/Yoween/spotify_to_ytmusic_gui)).
+It provides a GUI (implemented by Yoween, formerly called [spotify_to_ytmusic_gui](https://github.com/Yoween/spotify_to_ytmusic_gui)).
 
-# Thanks
+## Getting Started
 
-Thanks to @RadicalArti and Meet Vora for their generous financial contributions to this
-project.
-
-# Getting Started
-
-## Install Python (you may already have it)
-
-You will need a somewhat recent version of Python 3.10 and above are known to work,
-3.8-3.10 might work.
-
-### For Windows
-
-Download Python for Windows from: <https://www.python.org/downloads/windows/>
-You can also use choco to install it: `choco install python`
-
-### For MacOS
-
-Run:
-
-```shell
-brew install python
-brew install python-tk
-```
-
-Install certificates by doing:
-
-Macintosh HD > Applications > Python Folder > double click on "Install Certificates.command" file.
-
----
+Install Python and Git (you may already have it)
 
 ## Setup Instructions
 
 ### 1. Clone & Create a Virtual Environment & Install Required Packages
 
 Start by creating and activating a Python virtual environment to isolate dependencies.
-
-```shell
+```powershell
 git clone https://github.com/AmidelEst/spotify_to_ytmusic.git
 cd spotify_to_ytmusic
 ```
 
+On Windows:
 ```shell
 python -m venv .venv
 .venv\Scripts\activate
+pip install ytmusicapi tk
+```
+
+On Linux or Mac:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install ytmusicapi tk
 ```
 
@@ -66,7 +42,7 @@ To use the YouTube Music API, you need to generate valid credentials. Follow the
    Open [YouTube Music](https://music.youtube.com) in Firefox and ensure you are logged in.
 
 2. **Open the Inspection Tool**:
-   Press `F12` to open the browser’s inspection tool.
+   Press `F12` or (right click +inspection tool) to open the browser’s inspection tool.
 
 3. **Access the Network Tab**:
    Navigate to the **Network** tab and filter by `/browse`.
@@ -87,8 +63,14 @@ To use the YouTube Music API, you need to generate valid credentials. Follow the
 
    Execute the following command to generate the credentials file:
 
-   ```bash
+   On Windows:
+   ```powershell
    python spotify2ytmusic/ytmusic_credentials.py
+   ```
+
+   On Linux or Mac:
+   ```shell 
+   python3 spotify2ytmusic/ytmusic_credentials.py
    ```
 
 9. **Done**:
@@ -99,26 +81,29 @@ To use the YouTube Music API, you need to generate valid credentials. Follow the
 
 ### 3. Use the GUI for Migration
 
-Now you can use the graphical user interface (GUI) Tab 2 ->  Tab 6
+Now you can use the graphical user interface (GUI) Tab 2 -> Tab 6
 to migrate your playlists and liked songs to YouTube Music.
-
 Start the GUI with the following command:
 
 On Windows:
+
 ```shell
 python -m spotify2ytmusic gui
 ```
-Or on Linux:
-```shell
+
+On Linux:
+
+```bash
 python3 -m spotify2ytmusic gui
 ```
+
 ---
 
 ## GUI Features
 
 Once the GUI is running, you can:
 
-- **Backup Your Spotify Playlists**:  will save your playlists and liked songs into the file "playlists.json".
+- **Backup Your Spotify Playlists**: will save your playlists and liked songs into the file "playlists.json".
 - **Load Liked Songs**: Migrate your Spotify liked songs to YouTube Music.
 - **List Playlists**: View your playlists and their details.
 - **Copy All Playlists**: Migrate all Spotify playlists to YouTube Music.
@@ -165,80 +150,6 @@ will not duplicate entries on the playlist.
 
 ---
 
-## Command Line Usage
-
-### Backup Your Spotify Playlists
-
-Download
-[spotify-backup](https://raw.githubusercontent.com/caseychu/spotify-backup/master/spotify-backup.py).
-
-Run `spotify-backup.py` and it will help you authorize access to your spotify account.
-
-Run: `python3 spotify-backup.py playlists.json --dump=liked,playlists --format=json`
-
-This will save your playlists and liked songs into the file "playlists.json".
-
-### Import Your Liked Songs
-
-Run: `s2yt_load_liked`
-
-It will go through your Spotify liked songs, and like them on YTMusic. It will display
-the song from Spotify and then the song that it found on YTMusic that it is liking. I've
-spot-checked my songs and it seems to be doing a good job of matching YTMusic songs with
-Spotify. So far I haven't seen a single failure across a couple thousand songs, but more
-esoteric titles it may have issues with.
-
-### Import Your Liked Albums
-
-Run: `s2yt_load_liked_albums`
-
-Spotify stores liked albums outside of the "Liked Songs" playlist. This is the command to
-load your liked albums into YTMusic liked songs.
-
-### List Your Playlists
-
-Run `s2yt_list_playlists`
-
-This will list the playlists you have on both Spotify and YTMusic. You will need to
-individually copy them.
-
-### Copy Your Playlists
-
-You can either copy **all** playlists, or do a more surgical copy of individual playlists.
-Copying all playlists will use the name of the Spotify playlist as the destination
-playlist name on YTMusic. To copy all playlists, run:
-
-`s2yt_copy_all_playlists`
-
-**NOTE**: This does not copy the Liked playlist (see above to do that).
-
-In the list output above, find the "playlist id" (the first column) of the Spotify playlist,
-and of the YTMusic playlist, and then run:
-
-`s2yt_copy_playlist <SPOTIFY_PLAYLIST_ID> <YTMUSIC_PLAYLIST_ID>`
-
-If you need to create a playlist, you can run:
-
-`s2yt_create_playlist "<PLAYLIST_NAME>"`
-
-_Or_ the copy playlist can take the name of the YTMusic playlist and will create the
-playlist if it does not exist, if you start the YTMusic playlist with a "+":
-
-`s2yt_copy_playlist <SPOTIFY_PLAYLIST_ID> +<YTMUSIC_PLAYLIST_NAME>`
-
-For example:
-
-`s2yt_copy_playlist SPOTIFY_PLAYLIST_ID "+Feeling Like a PUNK"`
-
-Re-running "copy_playlist" or "load_liked" in the event that it fails should be safe, it
-will not duplicate entries on the playlist.
-
-### Searching for YTMusic Tracks
-
-This is mostly for debugging, but there is a command to search for tracks in YTMusic:
-
-`s2yt_search --artist <ARTIST> --album <ALBUM> <TRACK_NAME>`
-
 ## Details About Search Algorithms
 
 The function first searches for albums by the given artist name on YTMusic.
@@ -271,18 +182,6 @@ ValueError.
 - Does this run on mobile?
 
 No, this runs on Linux/Windows/MacOS.
-
-- I get "No matching distribution found for spotify2ytmusic".
-
-  This has been reported in [Issue #39](https://github.com/linsomniac/spotify_to_ytmusic/issues/39#issuecomment-1954432174)
-  and it seems like a mismatch between python versions. Users there, on MacOS, needed
-  to install a specific version of Python, and then use the matching version of PIP:
-
-  ```shell
-  brew install python@3.10
-  brew install python-tk@3.10
-  pip3.10 install spotify2ytmusic
-  ```
 
 - How does the lookup algorithm work?
 
