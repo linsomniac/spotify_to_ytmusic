@@ -5,7 +5,18 @@ It provides a GUI (implemented by Yoween, formerly called [spotify_to_ytmusic_gu
 
 ## Getting Started
 
-Install Python and Git (you may already have it)
+   - Install Python and Git (you may already have it)
+   - Make sure you have uninstalled the pip package from the original repo of linsomniac/spotify_to_ytmusic 
+      
+      On Windows:
+      ```shell
+      python -m pip uninstall spotify2ytmusic
+      ```
+
+      On Linux or Mac:
+      ```bash
+      python3 -m pip uninstall spotify2ytmusic
+      ```
 
 ## Setup Instructions
 
@@ -91,7 +102,7 @@ On Windows:
 python -m spotify2ytmusic gui
 ```
 
-On Linux:
+On Linux or Mac:
 
 ```bash
 python3 -m spotify2ytmusic gui
