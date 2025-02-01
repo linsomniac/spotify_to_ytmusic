@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+#
+#  This file is licensed under the MIT license
+#  This file originates from https://github.com/caseychu/spotify-backup
 
 import codecs
 import http.client
@@ -60,16 +63,13 @@ class SpotifyAPI:
 
     @staticmethod
     def _construct_auth_url(client_id, scope, redirect_uri):
-        return (
-            "https://accounts.spotify.com/authorize?"
-            + urllib.parse.urlencode(
-                {
-                    "response_type": "token",
-                    "client_id": client_id,
-                    "scope": scope,
-                    "redirect_uri": redirect_uri,
-                }
-            )
+        return "https://accounts.spotify.com/authorize?" + urllib.parse.urlencode(
+            {
+                "response_type": "token",
+                "client_id": client_id,
+                "scope": scope,
+                "redirect_uri": redirect_uri,
+            }
         )
 
     def _construct_url(self, url, params):
@@ -122,7 +122,9 @@ class SpotifyAPI:
             self.send_response(200)
             self.send_header("Content-Type", "text/html")
             self.end_headers()
-            self.wfile.write(b"<script>close()</script>Thanks! You may now close this window.")
+            self.wfile.write(
+                b"<script>close()</script>Thanks! You may now close this window."
+            )
             access_token = re.search("access_token=([^&]*)", self.path).group(1)
             raise SpotifyAPI._Authorization(access_token)
 
@@ -150,7 +152,9 @@ def fetch_user_data(spotify, dump):
         playlist_data = spotify.list("me/playlists", {"limit": 50})
         for playlist in playlist_data:
             print(f"Loading playlist: {playlist['name']}")
-            playlist["tracks"] = spotify.list(playlist["tracks"]["href"], {"limit": 100})
+            playlist["tracks"] = spotify.list(
+                playlist["tracks"]["href"], {"limit": 100}
+            )
         playlists.extend(playlist_data)
 
     return playlists, liked_albums
@@ -172,7 +176,10 @@ def write_to_file(file, format, playlists, liked_albums):
                                 uri=track["track"]["uri"],
                                 name=track["track"]["name"],
                                 artists=", ".join(
-                                    [artist["name"] for artist in track["track"]["artists"]]
+                                    [
+                                        artist["name"]
+                                        for artist in track["track"]["artists"]
+                                    ]
                                 ),
                                 album=track["track"]["album"]["name"],
                                 release_date=track["track"]["album"]["release_date"],
@@ -183,9 +190,13 @@ def write_to_file(file, format, playlists, liked_albums):
 
 def main(dump="playlists,liked", format="json", file="playlists.json", token=""):
     print("Starting backup...")
-    spotify = SpotifyAPI(token) if token else SpotifyAPI.authorize(
-        client_id="5c098bcc800e45d49e476265bc9b6934",
-        scope="playlist-read-private playlist-read-collaborative user-library-read",
+    spotify = (
+        SpotifyAPI(token)
+        if token
+        else SpotifyAPI.authorize(
+            client_id="5c098bcc800e45d49e476265bc9b6934",
+            scope="playlist-read-private playlist-read-collaborative user-library-read",
+        )
     )
 
     playlists, liked_albums = fetch_user_data(spotify, dump)
