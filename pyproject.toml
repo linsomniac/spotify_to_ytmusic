@@ -30,6 +30,7 @@ s2yt_ytoauth = "spotify2ytmusic.cli:ytoauth"
 project_name = "Spotify2YTMusic"
 bundle = "com.linsomniac"
 version = "0.1"
+license = "CC0-1.0"
 
 [tool.briefcase.app.spotify2ytmusic]
 formal_name = "Spotify2YTMusic"
