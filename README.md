@@ -174,9 +174,9 @@ See "Generate YouTube Music Credentials" above.
 
 ### Backup Your Spotify Playlists
 
-Run `spotify2ytmusic/spotify-backup.py` and it will help you authorize access to your spotify account.
+Run `spotify2ytmusic/spotify_backup.py` and it will help you authorize access to your spotify account.
 
-Run: `python3 spotify-backup.py playlists.json --dump=liked,playlists --format=json`
+Run: `python3 spotify_backup.py playlists.json --dump=liked,playlists --format=json`
 
 This will save your playlists and liked songs into the file "playlists.json".
 
