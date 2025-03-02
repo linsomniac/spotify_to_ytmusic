@@ -6,7 +6,18 @@ This is a set of scripts for copying "liked" songs and playlists from Spotify to
 
 ### Preparation/Pre-Conditions
 
-1. **Install Python and Git** (you may already have them installed).
+1. **Install Python, Git, and Python-tk (required for GUI)** (you may already have them installed).
+  
+  On Mac:
+
+- Install [Homebrew](https://brew.sh/)
+- python-tk will install the latest version of python
+
+  ```bash
+  brew install python-tk
+  brew install git
+  ```
+
 2. **Uninstall the pip package from the original repository** (if you previously installed `linsomniac/spotify_to_ytmusic`):
 
    On Windows:
@@ -56,13 +67,16 @@ pip install ytmusicapi tk
 
 To use the YouTube Music API, you need to generate valid credentials. Follow these steps:
 
-1. **Log in to YouTube Music**: Open YouTube Music in Firefox and ensure you are logged in.
+1. **Log in to YouTube Music**: Open YouTube Music in Firefox, ensure you are logged in, and click Explore.
 2. **Open the Inspection Tool**: Press `F12` or right-click and select _Inspect_ to open the browser's inspection tool.
 3. **Access the Network Tab**: Navigate to the Network tab and filter by `/browse`.
 4. **Select a Request**: Click one of the requests under the filtered results and locate the _Request Headers_ section.
 5. **Toggle RAW View**: Click the RAW toggle button to view the headers in raw format.
 6. **Copy Headers**: Right-click, choose _Select All_, and copy the content.
 7. **Paste into `raw_headers.txt`**: Open the `raw_headers.txt` file located in the main directory of this project and paste the copied content into it.
+
+> [!TIP]
+> If using Chrome instead of Firefox, select Developer Tools > Network > Headers after filtering for browse and copy the entire Request Headers section.  The `ytmusic_credentials.py` script will still work.
 
 **Run the Script**:
 
