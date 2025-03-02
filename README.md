@@ -7,8 +7,11 @@ This is a set of scripts for copying "liked" songs and playlists from Spotify to
 ### Preparation/Pre-Conditions
 
 1. **Install Python, Git, and Python-tk (required for GUI)** (you may already have them installed).
+  
   On Mac:
-python-tk will install the latest version of python
+
+- Install [Homebrew](https://brew.sh/)
+- python-tk will install the latest version of python
 
   ```bash
   brew install python-tk
