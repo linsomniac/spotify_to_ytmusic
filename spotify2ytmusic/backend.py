@@ -266,7 +266,6 @@ def lookup_song(
         except Exception as e:
             print(f"Unable to lookup album ({e}), continuing...")
 
-
     query = f"{track_name} by {artist_name}"
     if details:
         details.query = query

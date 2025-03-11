@@ -19,12 +19,6 @@ import re
 def transliterate_text(text: str) -> str:
     """
     Convert non-ASCII characters to their ASCII equivalents.
-    
-    Args:
-        text: String containing potentially non-ASCII characters
-        
-    Returns:
-        String with non-ASCII characters replaced by ASCII equivalents
     """
     # Character mapping dictionary for common accents and special characters
     replacements = {
@@ -91,12 +85,6 @@ def clean_metadata(metadata: str, metadata_type: str = "track") -> str:
 def clean_track_name(track_name: str) -> str:
     """
     Clean and standardize a track name.
-    
-    Args:
-        track_name: Raw track name
-        
-    Returns:
-        Standardized track name
     """
     return clean_metadata(track_name, "track")
 
@@ -104,12 +92,6 @@ def clean_track_name(track_name: str) -> str:
 def clean_album_name(album_name: str) -> str:
     """
     Clean and standardize an album name.
-    
-    Args:
-        album_name: Raw album name
-        
-    Returns:
-        Standardized album name
     """
     return clean_metadata(album_name, "album")
 
@@ -117,12 +99,6 @@ def clean_album_name(album_name: str) -> str:
 def clean_artist_name(artist_name: str) -> str:
     """
     Clean and standardize an artist name.
-    
-    Args:
-        artist_name: Raw artist name
-        
-    Returns:
-        Standardized artist name
     """
     return clean_metadata(artist_name, "artist")
 
@@ -179,7 +155,7 @@ def text_similarity(text1: str, text2: str) -> bool:
         if set(text1_parts) == set(text2_parts):
             return True
     
-    # Fuzzy matching with Levenshtein distance
+    # Fuzzy matching with Levenshtein distance (checking for up to 2 spelling mistakes)
     if levenshtein_distance(text1, text2) <= 2:
         return True
     
