@@ -10,6 +10,7 @@ from ytmusicapi import YTMusic
 from typing import Optional, Union, Iterator, Dict, List
 from collections import namedtuple
 from dataclasses import dataclass, field
+from spotify2ytmusic.normalized_metadata_algorithm import *
 
 
 SongInfo = namedtuple("SongInfo", ["title", "artist", "album"])
@@ -217,7 +218,6 @@ class ResearchDetails:
     songs: Optional[List[Dict]] = field(default=None)
     suggestions: Optional[List[str]] = field(default=None)
 
-
 def lookup_song(
     yt: YTMusic,
     track_name: str,
@@ -244,7 +244,7 @@ def lookup_song(
         `track_name` (str): The name of the researched track
         `artist_name` (str): The name of the researched track's artist
         `album_name` (str): The name of the researched track's album
-        `yt_search_algo` (int): 0 for exact matching, 1 for extended matching (search past 1st result), 2 for approximate matching (search in videos)
+        `yt_search_algo` (int): 0 for exact matching, 1 for extended matching (search past 1st result), 2 for approximate matching (search in videos), 3 for normalized metadata matching
         `details` (ResearchDetails): If specified, more information about the search and the response will be populated for use by the caller.
 
     Raises:
@@ -260,7 +260,7 @@ def lookup_song(
 
         try:
             for track in yt.get_album(album["browseId"])["tracks"]:
-                if track["title"] == track_name:
+                if normalized_track_match(track_name, album_name, artist_name, track):
                     return track
             # print(f"{track['videoId']} - {track['title']} - {track['artists'][0]['name']}")
         except Exception as e:
@@ -343,6 +343,18 @@ def lookup_song(
                         )
                 else:
                     return songs[0]
+            
+        case 3:
+            for song in songs:
+                if (normalized_track_match(track_name, album_name, artist_name, song)):
+                    return song
+
+            print(f"\nDid not find '{track_name} by {artist_name}' from {album_name}")
+            for song in songs[:5]:
+                print(f"    POSSIBLE MATCH: {song['title']} - {song['artists'][0]['name']} - {song['album']['name']}")
+            raise ValueError(
+                f"Did not find '{track_name} by {artist_name}' from {album_name}\n\n"
+            )
 
 
 def copier(
@@ -377,6 +389,10 @@ def copier(
     error_count = 0
 
     for src_track in src_tracks:
+        # TODO: REMOVE THIS
+        if src_track.title.strip() == "" or src_track.artist.strip() == "" or src_track.album.strip() == "":
+            continue
+
         print(f"Spotify:   {src_track.title} - {src_track.artist} - {src_track.album}")
 
         try:

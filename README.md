@@ -265,6 +265,13 @@ in the song title and checks for a match with the track name, artist name, and a
 name. If it can't find a match, it then searches for videos with the track name and
 artist name. If it still can't find a match, it raises a ValueError.
 
+If yt_search_algo is 3, it uses a normalized metadata matching algorithm.
+This approach handles differences in metadata formatting between Spotify and YouTube Music
+by normalizing track names, artist names, and album titles before comparison. It accounts for
+common variations like featuring artists, remastered versions, and special editions.
+If no match is found, it displays the closest search results to help users manually
+identify and add the correct song, which can be useful for troubleshooting difficult matches.
+
 If the function can't find the track using any of the above methods, it raises a
 ValueError.
 
