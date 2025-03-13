@@ -270,6 +270,11 @@ ValueError.
 
 ## FAQ
 
+- My copy is failing after 20-40 minutes. Is my session timing out?
+
+Try playing music in the browser on Youtube Music while you are loading the playlists,
+this has been reported to keep the session from timing out.
+
 - Does this run on mobile?
 
 No, this runs on Linux/Windows/MacOS.
