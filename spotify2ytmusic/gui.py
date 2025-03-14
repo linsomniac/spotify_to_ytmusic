@@ -216,7 +216,7 @@ class Window:
             command=lambda: self.call_func(
                 func=backend.copy_playlist,
                 args=(
-                    self.spotify_playlist_id.get(),
+                    self.spotify_playlist_id.get().strip(),
                     self.yt_playlist_id.get(),
                     "utf-8",
                     False,
