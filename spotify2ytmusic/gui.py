@@ -205,7 +205,7 @@ class Window:
         )
         self.spotify_playlist_id = tk.Entry(self.tab6)
         self.spotify_playlist_id.pack(anchor=tk.CENTER, expand=True)
-        create_label(self.tab6, text="YT Music playlist ID:").pack(
+        create_label(self.tab6, text="YT Music playlist ID (leave field blank to create a new playlist):").pack(
             anchor=tk.CENTER, expand=True
         )
         self.yt_playlist_id = tk.Entry(self.tab6)
