@@ -222,12 +222,13 @@ class Window:
                     False,
                     0.1,
                     self.var_algo.get(),
+                    self.var_reverse_playlist.get()
                 ),
                 next_tab=self.tab6,
             ),
         ).pack(anchor=tk.CENTER, expand=True)
 
-        # tab7
+        # Tab7 - Settings
         self.var_scroll = tk.BooleanVar()
 
         auto_scroll = tk.Checkbutton(
@@ -242,6 +243,21 @@ class Window:
         )
         auto_scroll.pack(anchor=tk.CENTER, expand=True)
         auto_scroll.select()
+
+        self.var_reverse_playlist = tk.BooleanVar()
+
+        reverse_playlist = tk.Checkbutton(
+            self.tab7,
+            text="Reverse Playlist",
+            variable=self.var_reverse_playlist,
+            command=lambda: self.load_write_settings(1),
+            background="#696969",
+            foreground="#ffffff",
+            selectcolor="#26242f",
+            border=1,
+        )
+        reverse_playlist.pack(anchor=tk.CENTER, expand=True)
+        reverse_playlist.select()
 
         self.var_algo = tk.IntVar()
         self.var_algo.set(0)
