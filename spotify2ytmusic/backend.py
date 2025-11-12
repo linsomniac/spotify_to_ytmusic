@@ -5,6 +5,7 @@ import sys
 import os
 import time
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from ytmusicapi import YTMusic
 from typing import Optional, Union, Iterator, Dict, List
@@ -375,53 +376,90 @@ def copier(
     tracks_added_set = set()
     duplicate_count = 0
     error_count = 0
+    video_ids_batch = []
 
-    for src_track in src_tracks:
-        print(f"Spotify:   {src_track.title} - {src_track.artist} - {src_track.album}")
-
+    # Convert to list for parallel processing
+    src_tracks_list = list(src_tracks)
+    
+    # Parallel lookup
+    def lookup_wrapper(src_track):
         try:
-            dst_track = lookup_song(
-                yt, src_track.title, src_track.artist, src_track.album, yt_search_algo
-            )
+            thread_yt = get_ytmusic()
+            return (src_track, lookup_song(thread_yt, src_track.title, src_track.artist, src_track.album, yt_search_algo), None)
         except Exception as e:
-            print(f"ERROR: Unable to look up song on YTMusic: {e}")
-            error_count += 1
-            continue
+            return (src_track, None, str(e))
+    
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {executor.submit(lookup_wrapper, track): track for track in src_tracks_list}
+        for future in as_completed(futures):
+            src_track, dst_track, error = future.result()
+            
+            print(f"Spotify:   {src_track.title} - {src_track.artist} - {src_track.album}")
 
-        yt_artist_name = "<Unknown>"
-        if "artists" in dst_track and len(dst_track["artists"]) > 0:
-            yt_artist_name = dst_track["artists"][0]["name"]
-        print(
-            f"  Youtube: {dst_track['title']} - {yt_artist_name} - {dst_track['album'] if 'album' in dst_track else '<Unknown>'}"
-        )
+            if error:
+                print(f"ERROR: Unable to look up song on YTMusic: {error}")
+                error_count += 1
+                continue
 
-        if dst_track["videoId"] in tracks_added_set:
-            print("(DUPLICATE, this track has already been added)")
-            duplicate_count += 1
-        tracks_added_set.add(dst_track["videoId"])
+            yt_artist_name = "<Unknown>"
+            if "artists" in dst_track and len(dst_track["artists"]) > 0:
+                yt_artist_name = dst_track["artists"][0]["name"]
+            print(
+                f"  Youtube: {dst_track['title']} - {yt_artist_name} - {dst_track['album'] if 'album' in dst_track else '<Unknown>'}"
+            )
 
-        if not dry_run:
-            exception_sleep = 5
-            for _ in range(10):
-                try:
+            if dst_track["videoId"] in tracks_added_set:
+                print("(DUPLICATE, this track has already been added)")
+                duplicate_count += 1
+            else:
+                tracks_added_set.add(dst_track["videoId"])
+                if not dry_run:
                     if dst_pl_id is not None:
-                        yt.add_playlist_items(
-                            playlistId=dst_pl_id,
-                            videoIds=[dst_track["videoId"]],
-                            duplicates=False,
-                        )
+                        video_ids_batch.append(dst_track["videoId"])
+                        # Batch add when we have 50 tracks
+                        if len(video_ids_batch) >= 50:
+                            exception_sleep = 5
+                            for _ in range(10):
+                                try:
+                                    yt.add_playlist_items(
+                                        playlistId=dst_pl_id,
+                                        videoIds=video_ids_batch,
+                                        duplicates=False,
+                                    )
+                                    video_ids_batch = []
+                                    break
+                                except Exception as e:
+                                    print(f"ERROR: (Retrying batch) {e} in {exception_sleep}s")
+                                    time.sleep(exception_sleep)
+                                    exception_sleep *= 2
                     else:
-                        yt.rate_song(dst_track["videoId"], "LIKE")
-                    break
-                except Exception as e:
-                    print(
-                        f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e} in {exception_sleep} seconds"
-                    )
-                    time.sleep(exception_sleep)
-                    exception_sleep *= 2
+                        exception_sleep = 5
+                        for _ in range(10):
+                            try:
+                                yt.rate_song(dst_track["videoId"], "LIKE")
+                                break
+                            except Exception as e:
+                                print(f"ERROR: (Retrying rate_song) {e} in {exception_sleep}s")
+                                time.sleep(exception_sleep)
+                                exception_sleep *= 2
+                        if track_sleep:
+                            time.sleep(track_sleep)
 
-        if track_sleep:
-            time.sleep(track_sleep)
+    # Add remaining tracks in batch
+    if not dry_run and dst_pl_id is not None and video_ids_batch:
+        exception_sleep = 5
+        for _ in range(10):
+            try:
+                yt.add_playlist_items(
+                    playlistId=dst_pl_id,
+                    videoIds=video_ids_batch,
+                    duplicates=False,
+                )
+                break
+            except Exception as e:
+                print(f"ERROR: (Retrying final batch) {e} in {exception_sleep}s")
+                time.sleep(exception_sleep)
+                exception_sleep *= 2
 
     print()
     print(
