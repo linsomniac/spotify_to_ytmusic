@@ -3,10 +3,13 @@
 #  This file is licensed under the MIT license
 #  This file originates from https://github.com/caseychu/spotify-backup
 
+import base64
 import codecs
+import hashlib
 import http.client
 import http.server
 import json
+import os
 import re
 import sys
 import time
@@ -20,9 +23,11 @@ class SpotifyAPI:
     """Class to interact with the Spotify API using an OAuth token."""
 
     BASE_URL = "https://api.spotify.com/v1/"
+    CLIENT_ID = "5c098bcc800e45d49e476265bc9b6934"
 
     def __init__(self, auth):
         self._auth = auth
+        self._code_verifier = None
 
     def get(self, url, params={}, tries=3):
         """Fetch a resource from Spotify API."""
@@ -47,14 +52,24 @@ class SpotifyAPI:
         return items
 
     @staticmethod
-    def authorize(client_id, scope):
+    def _generate_pkce_challenge():
+        code_verifier = base64.urlsafe_b64encode(os.urandom(32)).rstrip(b"=").decode("utf-8")
+        code_challenge = base64.urlsafe_b64encode(
+            hashlib.sha256(code_verifier.encode("utf-8")).digest()
+        ).rstrip(b"=").decode("utf-8")
+        return code_verifier, code_challenge
+
+    @staticmethod
+    def authorize(scope):
         """Open a browser for user authorization and return SpotifyAPI instance."""
+        code_verifier, code_challenge = SpotifyAPI._generate_pkce_challenge()
         redirect_uri = f"http://127.0.0.1:{SpotifyAPI._SERVER_PORT}/redirect"
-        url = SpotifyAPI._construct_auth_url(client_id, scope, redirect_uri)
+        url = SpotifyAPI._construct_auth_url(SpotifyAPI.CLIENT_ID, scope, redirect_uri, code_challenge)
         print(f"Open this link if the browser doesn't open automatically: {url}")
         webbrowser.open(url)
 
         server = SpotifyAPI._AuthorizationServer("127.0.0.1", SpotifyAPI._SERVER_PORT)
+        server.code_verifier = code_verifier
         try:
             while True:
                 server.handle_request()
@@ -62,13 +77,15 @@ class SpotifyAPI:
             return SpotifyAPI(auth.access_token)
 
     @staticmethod
-    def _construct_auth_url(client_id, scope, redirect_uri):
+    def _construct_auth_url(client_id, scope, redirect_uri, code_challenge):
         return "https://accounts.spotify.com/authorize?" + urllib.parse.urlencode(
             {
-                "response_type": "token",
+                "response_type": "code",
                 "client_id": client_id,
                 "scope": scope,
                 "redirect_uri": redirect_uri,
+                "code_challenge_method": "S256",
+                "code_challenge": code_challenge,
             }
         )
 
@@ -104,31 +121,46 @@ class SpotifyAPI:
     class _AuthorizationHandler(http.server.BaseHTTPRequestHandler):
         def do_GET(self):
             if self.path.startswith("/redirect"):
-                self._redirect_to_token()
-            elif self.path.startswith("/token?"):
-                self._handle_token()
+                query_s = urllib.parse.urlparse(self.path).query
+                query = urllib.parse.parse_qs(query_s)
+                if "code" in query:
+                    self._handle_code(query["code"][0])
+                else:
+                    self.send_error(400)
             else:
                 self.send_error(404)
 
-        def _redirect_to_token(self):
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html")
-            self.end_headers()
-            self.wfile.write(
-                b'<script>location.replace("token?" + location.hash.slice(1));</script>'
-            )
-
-        def _handle_token(self):
+        def _handle_code(self, code):
             self.send_response(200)
             self.send_header("Content-Type", "text/html")
             self.end_headers()
             self.wfile.write(
                 b"<script>close()</script>Thanks! You may now close this window."
             )
-            access_token = re.search("access_token=([^&]*)", self.path).group(1)
+            access_token = self._fetch_token(code)
             raise SpotifyAPI._Authorization(access_token)
 
+        def _fetch_token(self, code):
+            redirect_uri = f"http://127.0.0.1:{SpotifyAPI._SERVER_PORT}/redirect"
+            req = urllib.request.Request(
+                "https://accounts.spotify.com/api/token",
+                data=urllib.parse.urlencode(
+                    {
+                        "grant_type": "authorization_code",
+                        "code": code,
+                        "redirect_uri": redirect_uri,
+                        "client_id": SpotifyAPI.CLIENT_ID,
+                        "code_verifier": self.server.code_verifier,
+                    }
+                ).encode("utf-8"),
+            )
+            with urllib.request.urlopen(req) as res:
+                reader = codecs.getreader("utf-8")
+                data = json.load(reader(res))
+                return data["access_token"]
+
         def log_message(self, format, *args):
+            # To keep the console clean, we override this method to do nothing.
             pass
 
     class _Authorization(Exception):
@@ -194,7 +226,6 @@ def main(dump="playlists,liked", format="json", file="playlists.json", token="")
         SpotifyAPI(token)
         if token
         else SpotifyAPI.authorize(
-            client_id="5c098bcc800e45d49e476265bc9b6934",
             scope="playlist-read-private playlist-read-collaborative user-library-read",
         )
     )
