@@ -133,6 +133,18 @@ def iter_spotify_playlist(
     """
     spotify_pls = load_playlists_json(spotify_playlist_file, spotify_encoding)
 
+    def normalize_spotify_playlist_id(raw_id: Optional[str]) -> Optional[str]:
+        if raw_id is None:
+            return None
+        cleaned = raw_id.strip()
+        match = re.match(r"^spotify:playlist:([A-Za-z0-9]+)$", cleaned)
+        if match:
+            return match.group(1)
+        match = re.search(r"open\.spotify\.com/playlist/([A-Za-z0-9]+)", cleaned)
+        if match:
+            return match.group(1)
+        return cleaned
+
     def find_spotify_playlist(spotify_pls: Dict, src_pl_id: Union[str, None]) -> Dict:
         """Return the spotify playlist that matches the `src_pl_id`.
 
@@ -140,12 +152,18 @@ def iter_spotify_playlist(
             `spotify_pls`: The playlist datastrcuture saved by spotify-backup.
             `src_pl_id`: The ID of a playlist to find, or None for the "Liked Songs" playlist.
         """
+        normalized_id = normalize_spotify_playlist_id(src_pl_id)
         for src_pl in spotify_pls["playlists"]:
             if src_pl_id is None and str(src_pl.get("name")) == "Liked Songs":
                 return src_pl
-            if src_pl_id is not None and str(src_pl.get("id")) == src_pl_id:
+            if normalized_id is not None and str(src_pl.get("id")) == normalized_id:
                 return src_pl
-        raise ValueError(f"Could not find Spotify playlist {src_pl_id}")
+        msg = f"Could not find Spotify playlist {src_pl_id}"
+        if normalized_id is not None and normalized_id != src_pl_id:
+            msg += f" (normalized to {normalized_id})"
+        if src_pl_id and re.match(r"^(PL|RD|OL)", src_pl_id):
+            msg += ". That looks like a YouTube playlist ID; use a Spotify playlist ID or URL."
+        raise ValueError(msg)
 
     src_pl = find_spotify_playlist(spotify_pls, src_pl_id)
     src_pl_name = src_pl["name"]
