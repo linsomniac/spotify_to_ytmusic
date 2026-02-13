@@ -428,6 +428,8 @@ def copier(
         f"Added {len(tracks_added_set)} tracks, encountered {duplicate_count} duplicates, {error_count} errors"
     )
 
+def clean(value: str) -> str:
+    return (value or "").strip()
 
 def copy_playlist(
     spotify_playlist_id: str,
@@ -443,6 +445,10 @@ def copy_playlist(
     Copy a Spotify playlist to a YTMusic playlist
     @@@
     """
+    
+    spotify_playlist_id = clean(spotify_playlist_id)
+    ytmusic_playlist_id = clean(ytmusic_playlist_id)
+    
     print("Using search algo n°: ", yt_search_algo)
     yt = get_ytmusic()
     pl_name: str = ""
@@ -452,8 +458,8 @@ def copy_playlist(
 
         ytmusic_playlist_id = get_playlist_id_by_name(yt, pl_name)
         print(f"Looking up playlist '{pl_name}': id={ytmusic_playlist_id}")
-
-    if ytmusic_playlist_id is None:
+   
+    if not ytmusic_playlist_id: 
         if pl_name == "":
             print("No playlist name or ID provided, creating playlist...")
             spotify_pls: dict = load_playlists_json()
