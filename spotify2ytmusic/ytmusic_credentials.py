@@ -1,6 +1,50 @@
+import os
+import re
+
 import ytmusicapi
 
-import os
+
+def _headers_from_curl_bash(curl_text: str) -> str:
+    """
+    ytmusicapi.setup expects Firefox-style lines 'name: value'. Chrome's
+    'Copy as cURL' uses -H 'name: value' and -b '...', which that parser
+    does not understand. Convert cURL paste into the expected format.
+    """
+    lines: list[str] = []
+
+    m = re.search(r"-b\s+'([^']*)'", curl_text)
+    if m:
+        lines.append(f"cookie: {m.group(1)}")
+    else:
+        m = re.search(r'-b\s+"((?:\\.|[^"\\])*)"', curl_text)
+        if m:
+            lines.append(f"cookie: {re.sub(r'\\(.)', r'\1', m.group(1))}")
+
+    for m in re.finditer(r"-H\s+'([^']*)'", curl_text):
+        part = m.group(1)
+        if ":" not in part:
+            continue
+        name, value = part.split(":", 1)
+        lines.append(f"{name.strip()}: {value.strip()}")
+
+    for m in re.finditer(r'-H\s+"((?:\\.|[^"\\])*)"', curl_text):
+        part = re.sub(r'\\(.)', r"\1", m.group(1))
+        if ":" not in part:
+            continue
+        name, value = part.split(":", 1)
+        lines.append(f"{name.strip()}: {value.strip()}")
+
+    return "\n".join(lines)
+
+
+def _normalize_headers_raw(raw: str) -> str:
+    s = raw.strip()
+    if s.lower().startswith("curl "):
+        converted = _headers_from_curl_bash(raw)
+        if not converted.strip():
+            return raw
+        return converted
+    return raw
 
 
 def setup_ytmusic_with_raw_headers(
@@ -22,7 +66,7 @@ def setup_ytmusic_with_raw_headers(
 
     # Read the raw headers from the file
     with open(input_file, "r") as file:
-        headers_raw = file.read()
+        headers_raw = _normalize_headers_raw(file.read())
 
     # Use ytmusicapi.setup to process headers and save the credentials
     config_headers = ytmusicapi.setup(

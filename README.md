@@ -166,7 +166,7 @@ will not duplicate entries on the playlist.
 if the application was installed, which takes the form of: `s2yt_load_liked`
 
 If not fully installed, you can replace the "s2yt\_" with "python -m spotify2ytmusic", for
-example: `s2yt_load_liked` becomes `python -j spotify2ytmusic load_liked`
+example: `s2yt_load_liked` becomes `python3 -m spotify2ytmusic load_liked`
 
 ### Login to YTMusic
 
