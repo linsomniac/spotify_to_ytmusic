@@ -112,6 +112,10 @@ def load_liked_albums():
     """
     Load the "Liked" albums from Spotify into YTMusic.  Spotify stores liked albums separately
     from liked songs, so "load_liked" does not see the albums, you instead need to use this.
+
+    By default this transfers each track individually (like "load_liked"), which adds them to
+    Liked Songs.  Use --library-mode to add entire albums to the Library > Albums tab instead,
+    which avoids inflating your Liked Songs list.
     """
 
     def parse_arguments():
@@ -138,6 +142,13 @@ def load_liked_albums():
             default=0,
             help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
         )
+        parser.add_argument(
+            "--library-mode",
+            action="store_true",
+            help="Add albums to Library > Albums tab using rate_playlist, "
+            "instead of liking individual tracks.  This avoids inflating "
+            "your Liked Songs list.",
+        )
 
         return parser.parse_args()
 
@@ -145,15 +156,41 @@ def load_liked_albums():
 
     spotify_pls = backend.load_playlists_json()
 
-    backend.copier(
-        backend.iter_spotify_liked_albums(
-            spotify_encoding=args.spotify_playlists_encoding
-        ),
-        None,
-        args.dry_run,
-        args.track_sleep,
-        args.algo,
-    )
+    if args.library_mode:
+        yt = backend.get_ytmusic()
+        album_data = spotify_pls.get("albums", [])
+        success = 0
+        errors = 0
+
+        for item in album_data:
+            album = item.get("album")
+            if album is None:
+                continue
+
+            name = album["name"]
+            artist = album["artists"][0]["name"]
+            print(f"Spotify: {name} - {artist}")
+
+            if backend.add_album_to_library(
+                yt, name, artist,
+                dry_run=args.dry_run,
+                track_sleep=args.track_sleep,
+            ):
+                success += 1
+            else:
+                errors += 1
+
+        print(f"\nAlbums added: {success}, errors: {errors}")
+    else:
+        backend.copier(
+            backend.iter_spotify_liked_albums(
+                spotify_encoding=args.spotify_playlists_encoding
+            ),
+            None,
+            args.dry_run,
+            args.track_sleep,
+            args.algo,
+        )
 
 
 def load_liked():
