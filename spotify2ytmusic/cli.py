@@ -114,7 +114,7 @@ def load_liked_albums():
     from liked songs, so "load_liked" does not see the albums, you instead need to use this.
 
     By default this transfers each track individually (like "load_liked"), which adds them to
-    Liked Songs.  Use --library-mode to add entire albums to the Library > Albums tab instead,
+    Liked Songs.  Use --add-as-album to add entire albums to the Library > Albums tab instead,
     which avoids inflating your Liked Songs list.
     """
 
@@ -143,11 +143,11 @@ def load_liked_albums():
             help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
         )
         parser.add_argument(
-            "--library-mode",
+            "--add-as-album",
             action="store_true",
-            help="Add albums to Library > Albums tab using rate_playlist, "
-            "instead of liking individual tracks.  This avoids inflating "
-            "your Liked Songs list.",
+            help="Add each album to the Library > Albums tab (via rate_playlist) "
+            "instead of liking individual tracks.  This keeps your Liked Songs "
+            "list clean.",
         )
 
         return parser.parse_args()
@@ -156,7 +156,7 @@ def load_liked_albums():
 
     spotify_pls = backend.load_playlists_json()
 
-    if args.library_mode:
+    if args.add_as_album:
         yt = backend.get_ytmusic()
         album_data = spotify_pls.get("albums", [])
         success = 0
