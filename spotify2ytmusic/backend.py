@@ -23,38 +23,39 @@ def get_ytmusic() -> YTMusic:
       1. oauth.json  (OAuth, created by 'ytmusicapi oauth')
       2. browser.json (browser session, created by 'ytmusicapi browser')
       3. headers_auth.json (manual headers, see ytmusicapi docs)
+
+    Falls through to the next file if one is invalid or fails to load.
     """
-    auth_file = None
-    for candidate in ["oauth.json", "browser.json", "headers_auth.json"]:
-        if os.path.exists(candidate):
-            auth_file = candidate
-            break
+    candidates = ["oauth.json", "browser.json", "headers_auth.json"]
 
-    if auth_file is None:
-        print("ERROR: No auth file found.  Need one of: oauth.json, browser.json, headers_auth.json")
-        print()
-        print("Quick setup (browser auth, no Google Cloud project needed):")
-        print("  1. Open music.youtube.com in your browser (logged in)")
-        print("  2. DevTools (F12) -> Network tab -> filter by '/browse'")
-        print("  3. Click any POST request -> right-click -> Copy as cURL")
-        print("  4. Run: ytmusicapi browser  (or create browser.json manually)")
-        print()
-        print("OAuth setup (needs Google Cloud project):")
-        print("  1. Go to https://console.cloud.google.com/ -> enable YouTube Data API v3")
-        print("  2. Create OAuth 2.0 Client ID (type: 'TVs and Limited Input devices')")
-        print("  3. Run: ytmusicapi oauth --client-id <ID> --client-secret <SECRET>")
-        print()
-        print("See: https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html")
-        print("See: https://ytmusicapi.readthedocs.io/en/stable/setup/oauth.html")
-        sys.exit(1)
+    for auth_file in candidates:
+        if not os.path.exists(auth_file):
+            continue
+        try:
+            return YTMusic(auth_file)
+        except (json.decoder.JSONDecodeError, Exception) as e:
+            print(f"WARNING: Failed to load '{auth_file}': {e}")
+            print(f"         Trying next auth method...")
+            continue
 
-    try:
-        return YTMusic(auth_file)
-    except json.decoder.JSONDecodeError as e:
-        print(f"ERROR: JSON Decode error while trying to start YTMusic: {e}")
-        print(f"       This typically means a problem with '{auth_file}'.")
-        print("       Run 's2yt_ytoauth' for setup instructions.")
-        sys.exit(1)
+    print("ERROR: No valid auth file found.")
+    print()
+    print("Quick setup (browser auth, no Google Cloud project needed):")
+    print("  1. Open music.youtube.com in your browser (logged in)")
+    print("  2. Open DevTools (F12) -> Network tab -> filter by '/browse'")
+    print("  3. Right-click a POST request -> Copy as cURL")
+    print("  4. Run:  ytmusicapi browser")
+    print()
+    print("OAuth setup (needs Google Cloud project):")
+    print("  1. Go to https://console.cloud.google.com/")
+    print("  2. Enable YouTube Data API v3")
+    print("  3. Create OAuth 2.0 Client ID (type: 'TVs and Limited Input devices')")
+    print("  4. Run:  ytmusicapi oauth --client-id <ID> --client-secret <SECRET>")
+    print()
+    print("See: https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html")
+    print("See: https://ytmusicapi.readthedocs.io/en/stable/setup/oauth.html")
+    print("Run 's2yt_ytoauth' for interactive setup.")
+    sys.exit(1)
 
 
 def _ytmusic_create_playlist(
