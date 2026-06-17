@@ -17,7 +17,10 @@ SongInfo = namedtuple("SongInfo", ["title", "artist", "album"])
 
 def get_ytmusic() -> YTMusic:
     """
-    @@@
+    Create and return a YTMusic client instance.
+
+    Uses oauth.json for authentication.  Supports brand accounts via the
+    YT_BRAND_ACCOUNT_ID environment variable.
     """
     if not os.path.exists("oauth.json"):
         print("ERROR: No file 'oauth.json' exists in the current directory.")
@@ -25,10 +28,14 @@ def get_ytmusic() -> YTMusic:
         sys.exit(1)
 
     try:
-        return YTMusic("oauth.json")
+        brand_account_id = os.environ.get("YT_BRAND_ACCOUNT_ID")
+        kwargs = {}
+        if brand_account_id:
+            kwargs["user"] = brand_account_id
+        return YTMusic("oauth.json", **kwargs)
     except json.decoder.JSONDecodeError as e:
-        print(f"ERROR: JSON Decode error while trying start YTMusic: {e}")
-        print("       This typically means a problem with a 'oauth.json' file.")
+        print(f"ERROR: JSON Decode error while trying to start YTMusic: {e}")
+        print("       This typically means a problem with 'oauth.json'.")
         print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
         sys.exit(1)
 
