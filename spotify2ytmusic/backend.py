@@ -17,19 +17,43 @@ SongInfo = namedtuple("SongInfo", ["title", "artist", "album"])
 
 def get_ytmusic() -> YTMusic:
     """
-    @@@
+    Create and return a YTMusic client instance.
+
+    Tries authentication files in the following order:
+      1. oauth.json  (OAuth, created by 'ytmusicapi oauth')
+      2. browser.json (browser session, created by 'ytmusicapi browser')
+      3. headers_auth.json (manual headers, see ytmusicapi docs)
     """
-    if not os.path.exists("oauth.json"):
-        print("ERROR: No file 'oauth.json' exists in the current directory.")
-        print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
+    auth_file = None
+    for candidate in ["oauth.json", "browser.json", "headers_auth.json"]:
+        if os.path.exists(candidate):
+            auth_file = candidate
+            break
+
+    if auth_file is None:
+        print("ERROR: No auth file found.  Need one of: oauth.json, browser.json, headers_auth.json")
+        print()
+        print("Quick setup (browser auth, no Google Cloud project needed):")
+        print("  1. Open music.youtube.com in your browser (logged in)")
+        print("  2. DevTools (F12) -> Network tab -> filter by '/browse'")
+        print("  3. Click any POST request -> right-click -> Copy as cURL")
+        print("  4. Run: ytmusicapi browser  (or create browser.json manually)")
+        print()
+        print("OAuth setup (needs Google Cloud project):")
+        print("  1. Go to https://console.cloud.google.com/ -> enable YouTube Data API v3")
+        print("  2. Create OAuth 2.0 Client ID (type: 'TVs and Limited Input devices')")
+        print("  3. Run: ytmusicapi oauth --client-id <ID> --client-secret <SECRET>")
+        print()
+        print("See: https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html")
+        print("See: https://ytmusicapi.readthedocs.io/en/stable/setup/oauth.html")
         sys.exit(1)
 
     try:
-        return YTMusic("oauth.json")
+        return YTMusic(auth_file)
     except json.decoder.JSONDecodeError as e:
-        print(f"ERROR: JSON Decode error while trying start YTMusic: {e}")
-        print("       This typically means a problem with a 'oauth.json' file.")
-        print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
+        print(f"ERROR: JSON Decode error while trying to start YTMusic: {e}")
+        print(f"       This typically means a problem with '{auth_file}'.")
+        print("       Run 's2yt_ytoauth' for setup instructions.")
         sys.exit(1)
 
 

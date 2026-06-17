@@ -338,9 +338,33 @@ def gui():
 
 def ytoauth():
     """
-    Run the "ytmusicapi oauth" login.
-    """
-    from ytmusicapi.setup import main
+    Authenticate with YouTube Music.
 
-    sys.argv = ["ytmusicapi", "oauth"]
-    sys.exit(main())
+    Supports both OAuth and browser-based authentication.
+    """
+    import subprocess
+
+    print("=" * 60)
+    print("YouTube Music Authentication")
+    print("=" * 60)
+    print()
+    print("Choose a method:")
+    print()
+    print("1) Browser auth (recommended, no Google Cloud project needed)")
+    print("   - Open music.youtube.com in your browser (logged in)")
+    print("   - DevTools (F12) -> Network tab -> filter by '/browse'")
+    print("   - Click a POST request, right-click -> Copy as cURL")
+    print("   - Run: ytmusicapi browser")
+    print()
+    print("2) OAuth (needs Google Cloud project)")
+    print("   - Requires YouTube Data API v3 credentials")
+    print("   - Go to https://console.cloud.google.com/")
+    print("   - Create OAuth 2.0 Client ID (type: 'TVs and Limited Input devices')")
+    print("   - Run: ytmusicapi oauth --client-id <ID> --client-secret <SECRET>")
+    print()
+    print("3) Manual: create browser.json with request headers from DevTools")
+    print("   Required headers: Authorization, Cookie, X-Goog-AuthUser, x-origin")
+    print()
+    print("See: https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html")
+    print("See: https://ytmusicapi.readthedocs.io/en/stable/setup/oauth.html")
+    print("=" * 60)
