@@ -114,6 +114,63 @@ def iter_spotify_liked_albums(
             yield SongInfo(track["name"], track["artists"][0]["name"], album["name"])
 
 
+def add_album_to_library(
+    yt: YTMusic,
+    album_name: str,
+    artist_name: str,
+    dry_run: bool = False,
+    track_sleep: float = 0.5,
+) -> bool:
+    """
+    Add a Spotify album to the YTMusic library using playlist-level liking.
+
+    Unlike the per-track rate_song approach used by copier(), this calls
+    rate_playlist(album_browse_id, "LIKE") which adds the album to the
+    Library > Albums tab without inflating Liked Songs with individual tracks.
+
+    Returns True if the album was found and added, False otherwise.
+    """
+    results = yt.search(query=f"{album_name} by {artist_name}", filter="albums")
+    if not results:
+        print(f"  ERROR: Album not found on YTMusic: {album_name} by {artist_name}")
+        return False
+
+    album = results[0]
+    album_browse_id = album.get("browseId")
+    if not album_browse_id:
+        print(f"  ERROR: No browseId for album '{album_name}'")
+        return False
+
+    artist_display = "<Unknown>"
+    if album.get("artists"):
+        artist_display = album["artists"][0].get("name", "<Unknown>")
+    print(f"  YTMusic: {album.get('title', album_name)} - {artist_display}")
+
+    if dry_run:
+        print("  (dry-run, skipped)")
+        return True
+
+    exception_sleep = 5
+    last_error = None
+    for _ in range(10):
+        try:
+            yt.rate_playlist(album_browse_id, "LIKE")
+            break
+        except Exception as e:
+            last_error = e
+            print(f"  ERROR: (Retrying add_album_to_library) {e} in {exception_sleep}s")
+            time.sleep(exception_sleep)
+            exception_sleep *= 2
+    else:
+        print(f"  ERROR: Failed to add album after multiple retries: {album_name} ({last_error})")
+        return False
+
+    if track_sleep:
+        time.sleep(track_sleep)
+
+    return True
+
+
 def iter_spotify_playlist(
     src_pl_id: Optional[str] = None,
     spotify_playlist_file: str = "playlists.json",
