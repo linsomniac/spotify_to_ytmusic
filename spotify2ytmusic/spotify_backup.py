@@ -65,7 +65,7 @@ class SpotifyAPI:
     def _construct_auth_url(client_id, scope, redirect_uri):
         return "https://accounts.spotify.com/authorize?" + urllib.parse.urlencode(
             {
-                "response_type": "token",
+                "response_type": "code",
                 "client_id": client_id,
                 "scope": scope,
                 "redirect_uri": redirect_uri,
