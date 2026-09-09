@@ -132,6 +132,9 @@ def create_scrollable_tab(parent: ttk.Notebook) -> tuple[ttk.Frame, ttk.Frame]:
             active_canvas = root._active_scroll_canvas
             if active_canvas is None:
                 return
+            scrollregion = active_canvas.bbox("all")
+            if scrollregion is None or scrollregion[3] - scrollregion[1] <= active_canvas.winfo_height():
+                return
             if event.num == 4:
                 amount = -3
             elif event.num == 5:
