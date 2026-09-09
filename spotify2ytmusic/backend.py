@@ -5,6 +5,7 @@ import sys
 import os
 import time
 import re
+import threading
 
 from ytmusicapi import YTMusic
 from ytmusicapi.exceptions import YTMusicUserError
@@ -399,6 +400,8 @@ def copier(
     yt_search_algo: int = 0,
     *,
     yt: Optional[YTMusic] = None,
+    stop_event: Optional[threading.Event] = None,
+    pause_event: Optional[threading.Event] = None,
 ):
     """
     @@@
@@ -427,6 +430,14 @@ def copier(
     start_time = time.time()
 
     for index, src_track in enumerate(src_tracks, start=1):
+        if stop_event is not None and stop_event.is_set():
+            print("Operation reset.")
+            return
+        if pause_event is not None:
+            pause_event.wait()
+            if stop_event is not None and stop_event.is_set():
+                print("Operation reset.")
+                return
         elapsed = time.time() - start_time
         eta_str = ""
         if index > 1:
@@ -485,7 +496,10 @@ def copier(
                     exception_sleep *= 2
 
         if track_sleep:
-            time.sleep(track_sleep)
+            if pause_event is None:
+                time.sleep(track_sleep)
+            else:
+                pause_event.wait(track_sleep)
 
     print()
     print(
@@ -503,6 +517,8 @@ def copy_playlist(
     yt_search_algo: int = 0,
     reverse_playlist: bool = True,
     privacy_status: str = "PRIVATE",
+    stop_event: Optional[threading.Event] = None,
+    pause_event: Optional[threading.Event] = None,
 ):
     """
     Copy a Spotify playlist to a YTMusic playlist
@@ -550,6 +566,8 @@ def copy_playlist(
         track_sleep,
         yt_search_algo,
         yt=yt,
+        stop_event=stop_event,
+        pause_event=pause_event,
     )
 
 
@@ -560,6 +578,8 @@ def copy_all_playlists(
     yt_search_algo: int = 0,
     reverse_playlist: bool = True,
     privacy_status: str = "PRIVATE",
+    stop_event: Optional[threading.Event] = None,
+    pause_event: Optional[threading.Event] = None,
 ):
     """
     Copy all Spotify playlists (except Liked Songs) to YTMusic playlists
@@ -568,6 +588,14 @@ def copy_all_playlists(
     yt = get_ytmusic()
 
     for src_pl in spotify_pls["playlists"]:
+        if stop_event is not None and stop_event.is_set():
+            print("Operation reset.")
+            return
+        if pause_event is not None:
+            pause_event.wait()
+            if stop_event is not None and stop_event.is_set():
+                print("Operation reset.")
+                return
         if str(src_pl.get("name")) == "Liked Songs":
             continue
 
@@ -598,6 +626,8 @@ def copy_all_playlists(
             dry_run,
             track_sleep,
             yt_search_algo,
+            stop_event=stop_event,
+            pause_event=pause_event,
         )
         print("\nPlaylist done!\n")
 

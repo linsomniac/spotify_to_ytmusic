@@ -175,6 +175,11 @@ class Window:
         self.root.geometry("1280x720")
         self.theme_name = "dark"
         self.theme = THEMES[self.theme_name]
+        self.stop_event = threading.Event()
+        self.pause_event = threading.Event()
+        self.pause_event.set()
+        self.worker_thread: threading.Thread | None = None
+        self.operation_active = False
         self.root.config(background=self.theme["background"])
 
         style = ttk.Style()
@@ -237,7 +242,22 @@ class Window:
         self.paned_window.add(self.log_frame, weight=1)
         self.root.after_idle(self.set_initial_pane_sizes)
 
-        # Create the Text widget for the logs
+        # Create operation controls and the Text widget for the logs
+        self.operation_controls = ttk.Frame(self.log_frame)
+        self.operation_controls.pack(fill=tk.X, padx=6, pady=4)
+        create_button(
+            self.operation_controls, text="Stop", theme=self.theme, command=self.stop_operation
+        ).pack(side=tk.LEFT, padx=3)
+        create_button(
+            self.operation_controls, text="Continue", theme=self.theme, command=self.continue_operation
+        ).pack(side=tk.LEFT, padx=3)
+        create_button(
+            self.operation_controls, text="Reset", theme=self.theme, command=self.reset_operation
+        ).pack(side=tk.LEFT, padx=3)
+        self.operation_status = create_label(
+            self.operation_controls, text="Ready", theme=self.theme
+        )
+        self.operation_status.pack(side=tk.LEFT, padx=12)
         self.logs = tk.Text(self.log_frame, font=("Helvetica", 14))
         self.logs.pack(fill=tk.BOTH, expand=1)
         self.logs.config(background=self.theme["surface"], foreground=self.theme["text"])
@@ -305,6 +325,7 @@ class Window:
                     self.var_algo.get(),
                 ),
                 next_tab=self.tab4,
+                controllable=True,
             ),
         ).pack(anchor=tk.N, expand=False, pady=12)
 
@@ -369,6 +390,7 @@ class Window:
                 func=backend.copy_all_playlists,
                 args=(0.1, False, "utf-8", self.var_algo.get()),
                 next_tab=self.tab6,
+                controllable=True,
             ),
         ).pack(anchor=tk.N, expand=False, pady=12)
 
@@ -403,6 +425,7 @@ class Window:
                     self.var_algo.get(),
                 ),
                 next_tab=self.tab6,
+                controllable=True,
             ),
         ).pack(anchor=tk.N, expand=False, pady=12)
 
@@ -587,7 +610,9 @@ class Window:
         if self.var_scroll.get():
             self.logs.see(tk.END)
 
-    def call_func(self, func: Callable, args: tuple, next_tab: ttk.Frame) -> None:
+    def call_func(
+        self, func: Callable, args: tuple, next_tab: ttk.Frame, controllable: bool = False
+    ) -> None:
         """Calls the given function in a separate thread and switches to the next tab when the function is done.
 
         Args:
@@ -595,12 +620,54 @@ class Window:
             args (tuple): The arguments to be passed to the function. If no arguments are needed, pass an empty tuple.
             next_tab (ttk.Frame): The tab to switch to when the function is done. If no switch needed, pass the current one.
         """
-        th = threading.Thread(target=func, args=args)
+        if self.operation_active:
+            print("An operation is already running.")
+            return
+
+        self.stop_event.clear()
+        self.pause_event.set()
+        self.operation_active = controllable
+        self.operation_status.config(text="Running" if controllable else "Busy")
+
+        worker = lambda: func(*args)
+        if controllable:
+            worker = lambda: func(
+                *args, stop_event=self.stop_event, pause_event=self.pause_event
+            )
+
+        th = threading.Thread(target=worker)
+        self.worker_thread = th
         th.start()
         while th.is_alive():
             self.root.update()
-        self.tabControl.select(self.tab_pages.get(next_tab, next_tab))
+        self.worker_thread = None
+        was_reset = self.stop_event.is_set()
+        self.operation_active = False
+        self.stop_event.clear()
+        self.pause_event.set()
+        self.operation_status.config(text="Ready")
+        if not was_reset:
+            self.tabControl.select(self.tab_pages.get(next_tab, next_tab))
         print()
+
+    def stop_operation(self) -> None:
+        """Pause the current copy operation at its next track checkpoint."""
+        if self.operation_active:
+            self.pause_event.clear()
+            self.operation_status.config(text="Stopped")
+
+    def continue_operation(self) -> None:
+        """Continue a paused copy operation."""
+        if self.operation_active and not self.stop_event.is_set():
+            self.pause_event.set()
+            self.operation_status.config(text="Running")
+
+    def reset_operation(self) -> None:
+        """Cancel the current copy operation at its next track checkpoint."""
+        if self.operation_active:
+            self.stop_event.set()
+            self.pause_event.set()
+            self.operation_status.config(text="Resetting")
 
     def save_ytmusic_credentials(self) -> None:
         """Saves pasted raw headers to raw_headers.txt, regenerates oauth.json, and validates it."""
