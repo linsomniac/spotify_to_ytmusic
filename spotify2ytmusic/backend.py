@@ -409,6 +409,7 @@ def copier(
     if yt is None:
         yt = get_ytmusic()
 
+    existing_video_ids = set()
     if dst_pl_id is not None:
         try:
             yt_pl = yt.get_playlist(playlistId=dst_pl_id)
@@ -420,6 +421,11 @@ def copier(
             print("      'PL_DhcdsaJ7echjfdsaJFhdsWUd73HJFca'")
             sys.exit(1)
         print(f"== Youtube Playlist: {yt_pl['title']}")
+        existing_video_ids = {
+            track.get("videoId")
+            for track in yt_pl.get("tracks", [])
+            if track and track.get("videoId")
+        }
 
     tracks_added_set = set()
     pending_video_ids = []
@@ -495,9 +501,14 @@ def copier(
             f"  Youtube: {dst_track['title']} - {yt_artist_name} - {dst_track['album'] if 'album' in dst_track else '<Unknown>'}"
         )
 
-        if dst_track["videoId"] in tracks_added_set:
+        if (
+            dst_track["videoId"] in tracks_added_set
+            or dst_track["videoId"] in existing_video_ids
+        ):
             print("(DUPLICATE, this track has already been added)")
             duplicate_count += 1
+            tracks_added_set.add(dst_track["videoId"])
+            continue
         tracks_added_set.add(dst_track["videoId"])
 
         if not dry_run:
