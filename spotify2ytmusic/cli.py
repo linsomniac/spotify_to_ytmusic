@@ -19,20 +19,17 @@ def list_playlists():
     """
     List the playlists on Spotify and YTMusic
     """
-    yt = backend.get_ytmusic()
+    spotify_playlists, yt_playlists = backend.get_playlists_overview()
 
-    spotify_pls = backend.load_playlists_json()
-
-    #  Liked music
     print("== Spotify")
-    for src_pl in spotify_pls["playlists"]:
+    for src_pl in spotify_playlists:
         print(
             f"{src_pl.get('id')} - {src_pl['name']:50} ({len(src_pl['tracks'])} tracks)"
         )
 
     print()
     print("== YTMusic")
-    for pl in yt.get_library_playlists(limit=5000):
+    for pl in yt_playlists:
         print(f"{pl['playlistId']} - {pl['title']:40} ({pl.get('count', '?')} tracks)")
 
 

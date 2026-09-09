@@ -24,6 +24,14 @@ def setup_ytmusic_with_raw_headers(
     with open(input_file, "r") as file:
         headers_raw = file.read()
 
+    if "authorization:" not in headers_raw.lower():
+        raise ValueError(
+            f"'{input_file}' has no 'authorization' header (must contain "
+            "'SAPISIDHASH'). Re-capture it from a POST request to "
+            "'/youtubei/v1/browse' (filter Network tab by Fetch/XHR, not "
+            "Doc/All) while logged in to music.youtube.com."
+        )
+
     # Use ytmusicapi.setup to process headers and save the credentials
     config_headers = ytmusicapi.setup(
         filepath=credentials_file, headers_raw=headers_raw
