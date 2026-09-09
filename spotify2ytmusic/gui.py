@@ -107,6 +107,46 @@ def create_text(parent: tk.Frame, text: str, theme: dict, **kwargs) -> tk.Text:
     return text_widget
 
 
+def bind_paste(widget: tk.Entry | tk.Text) -> None:
+    """Provide reliable paste shortcuts for editable Tk widgets on macOS and other platforms."""
+    def paste(event=None):
+        try:
+            clipboard_text = widget.clipboard_get()
+        except tk.TclError:
+            return "break"
+
+        try:
+            if isinstance(widget, tk.Text):
+                try:
+                    widget.delete("sel.first", "sel.last")
+                except tk.TclError:
+                    pass
+                widget.insert("insert", clipboard_text)
+            else:
+                if widget.selection_present():
+                    widget.delete("sel.first", "sel.last")
+                widget.insert("insert", clipboard_text)
+        except tk.TclError:
+            return "break"
+        return "break"
+
+    for sequence in ("<Command-v>", "<Control-v>", "<Meta-v>", "<<Paste>>"):
+        widget.bind(sequence, paste, add="+")
+
+    menu = tk.Menu(widget, tearoff=False)
+    menu.add_command(label="Paste", command=paste)
+
+    def show_menu(event):
+        try:
+            menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            menu.grab_release()
+        return "break"
+
+    widget.bind("<Button-3>", show_menu, add="+")
+    widget.bind("<Button-2>", show_menu, add="+")
+
+
 def create_scrollable_tab(parent: ttk.Notebook) -> tuple[ttk.Frame, ttk.Frame]:
     """Create a notebook page with a vertically scrollable content frame."""
     page = ttk.Frame(parent)
@@ -279,6 +319,7 @@ class Window:
             theme=self.theme,
         ).pack(anchor=tk.CENTER)
         self.raw_headers_text = tk.Text(self.tab1, height=8, width=100)
+        bind_paste(self.raw_headers_text)
         self.raw_headers_text.pack(anchor=tk.CENTER, pady=5)
         create_button(
             self.tab1,
@@ -404,11 +445,13 @@ class Window:
             anchor=tk.N, expand=False, pady=8
         )
         self.spotify_playlist_id = tk.Entry(self.tab6)
+        bind_paste(self.spotify_playlist_id)
         self.spotify_playlist_id.pack(anchor=tk.N, expand=False, pady=8)
         create_label(self.tab6, text="YT Music playlist ID:", theme=self.theme).pack(
             anchor=tk.N, expand=False, pady=8
         )
         self.yt_playlist_id = tk.Entry(self.tab6)
+        bind_paste(self.yt_playlist_id)
         self.yt_playlist_id.pack(anchor=tk.N, expand=False, pady=8)
         create_button(
             self.tab6,
