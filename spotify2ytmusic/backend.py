@@ -7,6 +7,7 @@ import time
 import re
 
 from ytmusicapi import YTMusic
+from ytmusicapi.exceptions import YTMusicUserError
 from typing import Optional, Union, Iterator, Dict, List
 from collections import namedtuple
 from dataclasses import dataclass, field
@@ -30,6 +31,18 @@ def get_ytmusic() -> YTMusic:
         print(f"ERROR: JSON Decode error while trying start YTMusic: {e}")
         print("       This typically means a problem with a 'oauth.json' file.")
         print("       Have you logged in to YTMusic?  Run 'ytmusicapi oauth' to login")
+        sys.exit(1)
+    except YTMusicUserError as e:
+        print(f"ERROR: ytmusicapi rejected 'oauth.json': {e}")
+        print(
+            "       This usually means the captured request headers are missing the "
+            "'authorization' header (which must contain 'SAPISIDHASH')."
+        )
+        print(
+            "       Re-capture 'raw_headers.txt' from a POST request to '/browse' while "
+            "logged in to music.youtube.com, then re-run 'ytmusicapi oauth' or "
+            "'python3 spotify2ytmusic/ytmusic_credentials.py'."
+        )
         sys.exit(1)
 
 
@@ -174,6 +187,27 @@ def iter_spotify_playlist(
         yield SongInfo(src_track_name, src_track_artist, src_album_name)
 
 
+def get_playlists_overview() -> tuple[List[Dict], List[Dict]]:
+    """Fetch the raw Spotify and YTMusic playlist entries for display.
+
+    Returns:
+        tuple[List[Dict], List[Dict]]: The Spotify playlists and YTMusic playlists.
+    """
+    yt = get_ytmusic()
+    spotify_playlists = load_playlists_json()["playlists"]
+
+    try:
+        #  ytmusicapi can raise KeyError/TypeError instead of returning an empty list
+        #  https://github.com/sigma67/ytmusicapi/issues/539
+        yt_playlists = yt.get_library_playlists(limit=5000)
+    except (KeyError, TypeError) as e:
+        print(f"ERROR: Failed to list YTMusic playlists: {e}")
+        print("This is a known bug in ytmusicapi.  Try `pip install --upgrade ytmusicapi`.")
+        yt_playlists = []
+
+    return spotify_playlists, yt_playlists
+
+
 def get_playlist_id_by_name(yt: YTMusic, title: str) -> Optional[str]:
     """Look up a YTMusic playlist ID by name.
 
@@ -188,9 +222,9 @@ def get_playlist_id_by_name(yt: YTMusic, title: str) -> Optional[str]:
     #  https://github.com/sigma67/ytmusicapi/issues/539
     try:
         playlists = yt.get_library_playlists(limit=5000)
-    except KeyError as e:
+    except (KeyError, TypeError) as e:
         print("=" * 60)
-        print(f"Attempting to look up playlist '{title}' failed with KeyError: {e}")
+        print(f"Attempting to look up playlist '{title}' failed with {type(e).__name__}: {e}")
         print(
             "This is a bug in ytmusicapi that prevents 'copy_all_playlists' from working."
         )
@@ -345,6 +379,18 @@ def lookup_song(
                     return songs[0]
 
 
+def _format_duration(seconds: float) -> str:
+    """Format a duration in seconds as e.g. '1h02m', '5m09s', or '42s'."""
+    seconds = int(seconds)
+    hours, seconds = divmod(seconds, 3600)
+    minutes, seconds = divmod(seconds, 60)
+    if hours:
+        return f"{hours}h{minutes:02d}m"
+    if minutes:
+        return f"{minutes}m{seconds:02d}s"
+    return f"{seconds}s"
+
+
 def copier(
     src_tracks: Iterator[SongInfo],
     dst_pl_id: Optional[str] = None,
@@ -376,7 +422,17 @@ def copier(
     duplicate_count = 0
     error_count = 0
 
-    for src_track in src_tracks:
+    src_tracks = list(src_tracks)
+    total_tracks = len(src_tracks)
+    start_time = time.time()
+
+    for index, src_track in enumerate(src_tracks, start=1):
+        elapsed = time.time() - start_time
+        eta_str = ""
+        if index > 1:
+            eta = (elapsed / (index - 1)) * (total_tracks - index + 1)
+            eta_str = f", ETA {_format_duration(eta)}"
+        print(f"[{index}/{total_tracks}] elapsed {_format_duration(elapsed)}{eta_str}")
         print(f"Spotify:   {src_track.title} - {src_track.artist} - {src_track.album}")
 
         try:
@@ -414,6 +470,14 @@ def copier(
                         yt.rate_song(dst_track["videoId"], "LIKE")
                     break
                 except Exception as e:
+                    if "401" in str(e):
+                        #  Retrying won't help an expired/invalid session, unlike transient errors
+                        sys.exit(
+                            "ERROR: YTMusic returned HTTP 401 Unauthorized. Your "
+                            "'oauth.json' credentials are expired or invalid. Regenerate "
+                            "them (see 'Generate YouTube Music Credentials' in README) "
+                            "and try again."
+                        )
                     print(
                         f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e} in {exception_sleep} seconds"
                     )
@@ -427,6 +491,7 @@ def copier(
     print(
         f"Added {len(tracks_added_set)} tracks, encountered {duplicate_count} duplicates, {error_count} errors"
     )
+    print(f"Total time: {_format_duration(time.time() - start_time)}")
 
 
 def copy_playlist(
