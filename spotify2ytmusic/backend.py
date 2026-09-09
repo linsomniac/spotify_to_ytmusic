@@ -422,6 +422,7 @@ def copier(
         print(f"== Youtube Playlist: {yt_pl['title']}")
 
     tracks_added_set = set()
+    pending_video_ids = []
     duplicate_count = 0
     error_count = 0
 
@@ -429,13 +430,45 @@ def copier(
     total_tracks = len(src_tracks)
     start_time = time.time()
 
+    def add_playlist_items(video_ids: list[str]) -> None:
+        """Add a small batch of tracks, retrying transient API failures."""
+        if not video_ids:
+            return
+        exception_sleep = 5
+        for _ in range(10):
+            try:
+                yt.add_playlist_items(
+                    playlistId=dst_pl_id,
+                    videoIds=video_ids,
+                    duplicates=False,
+                )
+                return
+            except Exception as e:
+                if "401" in str(e):
+                    sys.exit(
+                        "ERROR: YTMusic returned HTTP 401 Unauthorized. Your "
+                        "'oauth.json' credentials are expired or invalid. Regenerate "
+                        "them (see 'Generate YouTube Music Credentials' in README) "
+                        "and try again."
+                    )
+                print(
+                    f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {video_ids}) "
+                    f"{e} in {exception_sleep} seconds"
+                )
+                time.sleep(exception_sleep)
+                exception_sleep *= 2
+
     for index, src_track in enumerate(src_tracks, start=1):
         if stop_event is not None and stop_event.is_set():
+            if not dry_run and dst_pl_id is not None:
+                add_playlist_items(pending_video_ids)
             print("Operation reset.")
             return
         if pause_event is not None:
             pause_event.wait()
             if stop_event is not None and stop_event.is_set():
+                if not dry_run and dst_pl_id is not None:
+                    add_playlist_items(pending_video_ids)
                 print("Operation reset.")
                 return
         elapsed = time.time() - start_time
@@ -468,38 +501,40 @@ def copier(
         tracks_added_set.add(dst_track["videoId"])
 
         if not dry_run:
-            exception_sleep = 5
-            for _ in range(10):
-                try:
-                    if dst_pl_id is not None:
-                        yt.add_playlist_items(
-                            playlistId=dst_pl_id,
-                            videoIds=[dst_track["videoId"]],
-                            duplicates=False,
-                        )
-                    else:
+            if dst_pl_id is not None:
+                pending_video_ids.append(dst_track["videoId"])
+                if len(pending_video_ids) >= 50:
+                    add_playlist_items(pending_video_ids)
+                    pending_video_ids.clear()
+            else:
+                exception_sleep = 5
+                for _ in range(10):
+                    try:
                         yt.rate_song(dst_track["videoId"], "LIKE")
-                    break
-                except Exception as e:
-                    if "401" in str(e):
-                        #  Retrying won't help an expired/invalid session, unlike transient errors
-                        sys.exit(
-                            "ERROR: YTMusic returned HTTP 401 Unauthorized. Your "
-                            "'oauth.json' credentials are expired or invalid. Regenerate "
-                            "them (see 'Generate YouTube Music Credentials' in README) "
-                            "and try again."
+                        break
+                    except Exception as e:
+                        if "401" in str(e):
+                            sys.exit(
+                                "ERROR: YTMusic returned HTTP 401 Unauthorized. Your "
+                                "'oauth.json' credentials are expired or invalid. Regenerate "
+                                "them (see 'Generate YouTube Music Credentials' in README) "
+                                "and try again."
+                            )
+                        print(
+                            f"ERROR: (Retrying rate_song: {dst_track['videoId']}) "
+                            f"{e} in {exception_sleep} seconds"
                         )
-                    print(
-                        f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e} in {exception_sleep} seconds"
-                    )
-                    time.sleep(exception_sleep)
-                    exception_sleep *= 2
+                        time.sleep(exception_sleep)
+                        exception_sleep *= 2
 
         if track_sleep:
             if pause_event is None:
                 time.sleep(track_sleep)
             else:
                 pause_event.wait(track_sleep)
+
+    if not dry_run and dst_pl_id is not None:
+        add_playlist_items(pending_video_ids)
 
     print()
     print(
