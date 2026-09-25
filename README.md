@@ -235,6 +235,16 @@ For example:
 Re-running "copy_playlist" or "load_liked" in the event that it fails should be safe, it
 will not duplicate entries on the playlist.
 
+### Resuming an Interrupted Copy
+
+The copy commands (`load_liked`, `load_liked_albums`, `copy_playlist`, and
+`copy_all_playlists`) record each track they copy in `s2yt_progress.jsonl`. If a run
+stops partway, re-running the same command skips the tracks already copied instead of
+searching YTMusic for them again, so it picks up where it left off.
+
+Delete `s2yt_progress.jsonl` to start over from scratch, use `--progress-file FILE` to
+keep progress somewhere else, or pass `--progress-file ''` to disable it.
+
 ### Searching for YTMusic Tracks
 
 This is mostly for debugging, but there is a command to search for tracks in YTMusic:

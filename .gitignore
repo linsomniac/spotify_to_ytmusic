@@ -174,3 +174,5 @@ cython_debug/
 oauth.json
 raw_headers.txt
 playlists.json
+# resume progress for copy commands
+s2yt_progress.jsonl

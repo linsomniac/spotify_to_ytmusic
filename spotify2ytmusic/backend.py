@@ -14,6 +14,65 @@ from dataclasses import dataclass, field
 
 SongInfo = namedtuple("SongInfo", ["title", "artist", "album"])
 
+DEFAULT_PROGRESS_FILE = "s2yt_progress.jsonl"
+
+
+class CopyProgress:
+    """Record of tracks already copied, so an interrupted copy can resume.
+
+    Each copied track is appended as one JSON line and flushed right away, so
+    progress survives a crash or Ctrl-C.  Tracks are keyed by destination
+    (YTMusic playlist ID, or "LIKED" for liked songs) plus the Spotify
+    title/artist/album, which lets a re-run skip them without searching again.
+    """
+
+    LIKED = "LIKED"
+
+    def __init__(self, filename: Optional[str] = DEFAULT_PROGRESS_FILE):
+        self.filename = filename
+        self._done = set()
+        if not filename or not os.path.exists(filename):
+            return
+        with open(filename, "r", encoding="utf-8") as f:
+            contents = f.read()
+        if contents and not contents.endswith("\n"):
+            #  Terminate a line cut short by a crash so new entries start cleanly.
+            with open(filename, "a", encoding="utf-8") as f:
+                f.write("\n")
+        for line in contents.splitlines():
+            try:
+                entry = json.loads(line)
+                self._done.add(
+                    (entry["dst"], entry["title"], entry["artist"], entry["album"])
+                )
+            except (json.JSONDecodeError, KeyError, TypeError):
+                #  A line cut short by a crash mid-write; that track just gets redone.
+                continue
+
+    @staticmethod
+    def _key(dst_pl_id: Optional[str], track: SongInfo) -> tuple:
+        dst = dst_pl_id if dst_pl_id is not None else CopyProgress.LIKED
+        return (dst, track.title, track.artist, track.album)
+
+    def is_done(self, dst_pl_id: Optional[str], track: SongInfo) -> bool:
+        return self._key(dst_pl_id, track) in self._done
+
+    def mark_done(self, dst_pl_id: Optional[str], track: SongInfo, video_id: str):
+        key = self._key(dst_pl_id, track)
+        self._done.add(key)
+        if not self.filename:
+            return
+        dst, title, artist, album = key
+        entry = {
+            "dst": dst,
+            "title": title,
+            "artist": artist,
+            "album": album,
+            "videoId": video_id,
+        }
+        with open(self.filename, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
 
 def get_ytmusic() -> YTMusic:
     """
@@ -353,12 +412,19 @@ def copier(
     yt_search_algo: int = 0,
     *,
     yt: Optional[YTMusic] = None,
+    progress_file: Optional[str] = DEFAULT_PROGRESS_FILE,
 ):
     """
-    @@@
+    Copy `src_tracks` to the YTMusic playlist `dst_pl_id` (or liked songs if None).
+
+    Tracks recorded in `progress_file` as already copied to this destination are
+    skipped.  Pass `progress_file=None` to disable progress tracking.
     """
     if yt is None:
         yt = get_ytmusic()
+
+    progress = CopyProgress(progress_file)
+    skipped_count = 0
 
     if dst_pl_id is not None:
         try:
@@ -377,6 +443,10 @@ def copier(
     error_count = 0
 
     for src_track in src_tracks:
+        if progress.is_done(dst_pl_id, src_track):
+            skipped_count += 1
+            continue
+
         print(f"Spotify:   {src_track.title} - {src_track.artist} - {src_track.album}")
 
         try:
@@ -412,6 +482,7 @@ def copier(
                         )
                     else:
                         yt.rate_song(dst_track["videoId"], "LIKE")
+                    progress.mark_done(dst_pl_id, src_track, dst_track["videoId"])
                     break
                 except Exception as e:
                     print(
@@ -424,6 +495,8 @@ def copier(
             time.sleep(track_sleep)
 
     print()
+    if skipped_count:
+        print(f"Skipped {skipped_count} tracks already copied in a previous run")
     print(
         f"Added {len(tracks_added_set)} tracks, encountered {duplicate_count} duplicates, {error_count} errors"
     )
@@ -438,6 +511,7 @@ def copy_playlist(
     yt_search_algo: int = 0,
     reverse_playlist: bool = True,
     privacy_status: str = "PRIVATE",
+    progress_file: Optional[str] = DEFAULT_PROGRESS_FILE,
 ):
     """
     Copy a Spotify playlist to a YTMusic playlist
@@ -485,6 +559,7 @@ def copy_playlist(
         track_sleep,
         yt_search_algo,
         yt=yt,
+        progress_file=progress_file,
     )
 
 
@@ -495,6 +570,7 @@ def copy_all_playlists(
     yt_search_algo: int = 0,
     reverse_playlist: bool = True,
     privacy_status: str = "PRIVATE",
+    progress_file: Optional[str] = DEFAULT_PROGRESS_FILE,
 ):
     """
     Copy all Spotify playlists (except Liked Songs) to YTMusic playlists
@@ -533,6 +609,7 @@ def copy_all_playlists(
             dry_run,
             track_sleep,
             yt_search_algo,
+            progress_file=progress_file,
         )
         print("\nPlaylist done!\n")
 

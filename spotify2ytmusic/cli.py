@@ -139,6 +139,14 @@ def load_liked_albums():
             help="Algorithm to use for search (0 = exact, 1 = extended, 2 = approximate)",
         )
 
+        parser.add_argument(
+            "--progress-file",
+            default=backend.DEFAULT_PROGRESS_FILE,
+            help="File recording tracks already copied, so an interrupted run can resume "
+            "without searching for them again.  Pass '' to disable.  "
+            f"(default: {backend.DEFAULT_PROGRESS_FILE})",
+        )
+
         return parser.parse_args()
 
     args = parse_arguments()
@@ -153,6 +161,7 @@ def load_liked_albums():
         args.dry_run,
         args.track_sleep,
         args.algo,
+        progress_file=args.progress_file or None,
     )
 
 
@@ -192,6 +201,14 @@ def load_liked():
             "they are added in the opposite order from other commands in this program.",
         )
 
+        parser.add_argument(
+            "--progress-file",
+            default=backend.DEFAULT_PROGRESS_FILE,
+            help="File recording tracks already copied, so an interrupted run can resume "
+            "without searching for them again.  Pass '' to disable.  "
+            f"(default: {backend.DEFAULT_PROGRESS_FILE})",
+        )
+
         return parser.parse_args()
 
     args = parse_arguments()
@@ -206,6 +223,7 @@ def load_liked():
         args.dry_run,
         args.track_sleep,
         args.algo,
+        progress_file=args.progress_file or None,
     )
 
 
@@ -260,6 +278,14 @@ def copy_playlist():
             help="The privacy seting of created playlists (PRIVATE, PUBLIC, UNLISTED, default PRIVATE)",
         )
 
+        parser.add_argument(
+            "--progress-file",
+            default=backend.DEFAULT_PROGRESS_FILE,
+            help="File recording tracks already copied, so an interrupted run can resume "
+            "without searching for them again.  Pass '' to disable.  "
+            f"(default: {backend.DEFAULT_PROGRESS_FILE})",
+        )
+
         return parser.parse_args()
 
     args = parse_arguments()
@@ -271,6 +297,7 @@ def copy_playlist():
         spotify_playlists_encoding=args.spotify_playlists_encoding,
         reverse_playlist=not args.no_reverse_playlist,
         privacy_status=args.privacy,
+        progress_file=args.progress_file or None,
     )
 
 
@@ -315,6 +342,14 @@ def copy_all_playlists():
             help="The privacy seting of created playlists (PRIVATE, PUBLIC, UNLISTED, default PRIVATE)",
         )
 
+        parser.add_argument(
+            "--progress-file",
+            default=backend.DEFAULT_PROGRESS_FILE,
+            help="File recording tracks already copied, so an interrupted run can resume "
+            "without searching for them again.  Pass '' to disable.  "
+            f"(default: {backend.DEFAULT_PROGRESS_FILE})",
+        )
+
         return parser.parse_args()
 
     args = parse_arguments()
@@ -324,6 +359,7 @@ def copy_all_playlists():
         spotify_playlists_encoding=args.spotify_playlists_encoding,
         reverse_playlist=not args.no_reverse_playlist,
         privacy_status=args.privacy,
+        progress_file=args.progress_file or None,
     )
 
 
