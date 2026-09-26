@@ -33,6 +33,16 @@ def get_ytmusic() -> YTMusic:
         sys.exit(1)
 
 
+def _ytmusic_safe_title(title: str) -> str:
+    """Normalize a title the way YTMusic will store it.
+
+    YTMusic trims leading/trailing whitespace off playlist titles, so a title that
+    still has it would never match on lookup and get re-created (and re-copied) on
+    every run.  It also rejects "<" and ">"; swap in look-alike characters for those.
+    """
+    return title.strip().replace("<", "‹").replace(">", "›")
+
+
 def _ytmusic_create_playlist(
     yt: YTMusic, title: str, description: str, privacy_status: str = "PRIVATE"
 ) -> str:
@@ -66,6 +76,8 @@ def _ytmusic_create_playlist(
             "s2yt error": 'ERROR: Could not create playlist "{title}" after multiple retries'
         }
 
+    title = _ytmusic_safe_title(title)
+    description = _ytmusic_safe_title(description)
     id = _create(yt, title, description, privacy_status)
     #  create_playlist returns a dict if there was an error
     if isinstance(id, dict):
@@ -204,8 +216,9 @@ def get_playlist_id_by_name(yt: YTMusic, title: str) -> Optional[str]:
         print("=" * 60)
         raise
 
+    title = _ytmusic_safe_title(title)
     for pl in playlists:
-        if pl["title"] == title:
+        if _ytmusic_safe_title(pl["title"]) == title:
             return pl["playlistId"]
 
     return None
@@ -361,15 +374,22 @@ def copier(
         yt = get_ytmusic()
 
     if dst_pl_id is not None:
-        try:
-            yt_pl = yt.get_playlist(playlistId=dst_pl_id)
-        except Exception as e:
-            print(f"ERROR: Unable to find YTMusic playlist {dst_pl_id}: {e}")
-            print(
-                "       Make sure the YTMusic playlist ID is correct, it should be something like "
-            )
-            print("      'PL_DhcdsaJ7echjfdsaJFhdsWUd73HJFca'")
-            sys.exit(1)
+        #  A just-created playlist can take a little while before it can be fetched.
+        for wait in (5, 10, 20, 40, 0):
+            try:
+                yt_pl = yt.get_playlist(playlistId=dst_pl_id)
+                break
+            except Exception as e:
+                if wait:
+                    print(f"Playlist {dst_pl_id} not available yet, retrying in {wait}s")
+                    time.sleep(wait)
+                    continue
+                print(f"ERROR: Unable to find YTMusic playlist {dst_pl_id}: {e}")
+                print(
+                    "       Make sure the YTMusic playlist ID is correct, it should be something like "
+                )
+                print("      'PL_DhcdsaJ7echjfdsaJFhdsWUd73HJFca'")
+                sys.exit(1)
         print(f"== Youtube Playlist: {yt_pl['title']}")
 
     tracks_added_set = set()
@@ -414,6 +434,11 @@ def copier(
                         yt.rate_song(dst_track["videoId"], "LIKE")
                     break
                 except Exception as e:
+                    if "HTTP 401" in str(e):
+                        #  Retrying can't fix an expired login; stop so it can be refreshed.
+                        print(f"ERROR: YTMusic rejected the login ({e})")
+                        print("       Refresh your YTMusic credentials and re-run.")
+                        sys.exit(2)
                     print(
                         f"ERROR: (Retrying add_playlist_items: {dst_pl_id} {dst_track['videoId']}) {e} in {exception_sleep} seconds"
                     )
