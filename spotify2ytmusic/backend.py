@@ -157,19 +157,20 @@ def iter_spotify_playlist(
         pl_tracks = reversed(pl_tracks)
 
     for src_track in pl_tracks:
-        if src_track["track"] is None:
+        track_info = src_track.get("track") or src_track.get("item")
+        if track_info is None:
             print(
                 f"WARNING: Spotify track seems to be malformed, Skipping.  Track: {src_track!r}"
             )
             continue
 
         try:
-            src_album_name = src_track["track"]["album"]["name"]
-            src_track_artist = src_track["track"]["artists"][0]["name"]
-        except TypeError as e:
+            src_album_name = track_info["album"]["name"]
+            src_track_artist = track_info["artists"][0]["name"]
+        except KeyError:
             print(f"ERROR: Spotify track seems to be malformed.  Track: {src_track!r}")
-            raise e
-        src_track_name = src_track["track"]["name"]
+            continue
+        src_track_name = track_info["name"]
 
         yield SongInfo(src_track_name, src_track_artist, src_album_name)
 

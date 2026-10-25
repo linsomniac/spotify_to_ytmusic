@@ -320,8 +320,7 @@ class Window:
                 else:  # For Unix and Linux
                     try:
                         subprocess.call(
-                            "python3 -m ytmusicapi oauth",
-                            shell=True,
+                            [sys.executable, "-m", "ytmusicapi", "oauth"],
                             stdout=subprocess.PIPE,
                         )
                     except Exception as e:
